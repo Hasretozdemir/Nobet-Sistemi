@@ -1,0 +1,357 @@
+@model HastaneNobetSistemi.Models.IzinTalebi
+
+@{
+    ViewData["Title"] = "Ýzin Talebi Detayý";
+    var gunSayisi = Model != null ? (Model.BitisTarihi.Date - Model.BaslangicTarihi.Date).Days + 1 : 0;
+    var nobetCakismasi = ViewBag.NobetCakismasi as bool? ?? false;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        --danger-soft: #fef2f2;
+        --success-soft: #f0fdf4;
+        --warning-soft: #fffbeb;
+    }
+
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #1e293b;
+    }
+
+    h2, h4, h5 {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Ana Kart Yapýsý */
+    .detail-container {
+        max-width: 1000px;
+        margin: 40px auto;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    /* Durum Bannerlarý */
+    .status-banner {
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+    }
+
+    .banner-pending {
+        background-color: var(--warning-soft);
+        border: 1px solid #fde68a;
+        color: #92400e;
+    }
+
+    .banner-approved {
+        background-color: var(--success-soft);
+        border: 1px solid #bbf7d0;
+        color: #166534;
+    }
+
+    .banner-rejected {
+        background-color: var(--danger-soft);
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+
+    /* Bilgi Gruplarý */
+    .info-group {
+        background: #ffffff;
+        padding: 24px;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        height: 100%;
+        transition: transform 0.2s;
+    }
+
+        .info-group:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+        }
+
+    .label-tag {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #94a3b8;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .value-text {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    /* Çakýþma Uyarýsý Animasyonu */
+    .conflict-card {
+        background: #fff1f2;
+        border-left: 6px solid #e11d48;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        animation: slideIn 0.5s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Sticky Aksiyon Çubuðu */
+    .floating-actions {
+        background: #fff;
+        padding: 20px 40px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btn-action {
+        padding: 12px 32px;
+        border-radius: 12px;
+        font-weight: 700;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-approve {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+    }
+
+        .btn-approve:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+            color: white;
+        }
+
+    .timeline-dot {
+        width: 12px;
+        height: 12px;
+        background: #cbd5e1;
+        border-radius: 50%;
+        position: relative;
+    }
+</style>
+
+<div class="container detail-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a asp-action="YonetimPaneli" class="btn btn-outline-secondary rounded-pill px-4 fw-bold shadow-sm bg-white">
+            <i class="fa-solid fa-arrow-left me-2"></i>Geri Dön
+        </a>
+        <div class="text-end">
+            <h4 class="mb-0 fw-bold">Talep No: #@Model?.Id</h4>
+            <small class="text-muted">Baþvuru: @Model?.TalepTarihi.ToString("dd.MM.yyyy HH:mm")</small>
+        </div>
+    </div>
+
+    @if (Model == null)
+    {
+        <div class="glass-card p-5 text-center">
+            <i class="fa-solid fa-triangle-exclamation text-danger fs-1 mb-3"></i>
+            <h4 class="text-danger">Talep verisi bulunamadý.</h4>
+        </div>
+    }
+    else
+    {
+        <div class="glass-card">
+            <div class="p-4 p-md-5">
+
+                @{
+                    var statusClass = Model.Durum == "Beklemede" ? "banner-pending" : Model.Durum == "Onaylandi" ? "banner-approved" : "banner-rejected";
+                    var statusIcon = Model.Durum == "Beklemede" ? "fa-hourglass-half" : Model.Durum == "Onaylandi" ? "fa-check-circle" : "fa-circle-xmark";
+                }
+                <div class="status-banner @statusClass">
+                    <i class="fa-solid @statusIcon fs-2"></i>
+                    <div>
+                        <h5 class="mb-0 fw-bold">Talep Durumu: @Model.Durum</h5>
+                        <p class="mb-0 small opacity-75">
+                            @if (Model.Durum == "Beklemede")
+                            {
+                                <span>Bu talep onayýnýzý bekliyor.</span>
+                            }
+                            else
+                            {
+
+                                <span>Ýþlem Tarihi: @Model.OnayTarihi?.ToString("dd.MM.yyyy HH:mm")</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+
+                @if (nobetCakismasi && Model.Durum == "Beklemede")
+                {
+                    <div class="conflict-card d-flex align-items-center">
+                        <i class="fa-solid fa-shield-virus fs-2 me-3 text-danger"></i>
+                        <div>
+                            <h6 class="mb-1 fw-bold">Personel Görev Çakýþmasý!</h6>
+                            <p class="mb-0 small">Seçili tarihler arasýnda personelin sistemde tanýmlý **nöbeti bulunmaktadýr.** Onay durumunda nöbet deðiþikliði gerekebilir.</p>
+                        </div>
+                    </div>
+                }
+
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <div class="info-group">
+                            <h6 class="fw-bold mb-4 d-flex align-items-center">
+                                <span class="bg-primary bg-opacity-10 p-2 rounded-3 me-2"><i class="fa-solid fa-user-doctor text-primary"></i></span>
+                                Personel Künyesi
+                            </h6>
+                            <div class="mb-3">
+                                <span class="label-tag">Ad Soyad</span>
+                                <span class="value-text fs-5">@(Model.Personel?.AdSoyad ?? "Bilinmiyor")</span>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span class="label-tag">Sicil No</span>
+                                    <span class="value-text">@(Model.Personel?.SicilNo ?? "-")</span>
+                                </div>
+                                <div class="col-6 border-start ps-3">
+                                    <span class="label-tag">Görev Birimi</span>
+                                    <span class="value-text">@(Model.Personel?.Birim ?? "-")</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7">
+                        <div class="info-group border-top border-primary border-4">
+                            <h6 class="fw-bold mb-4 d-flex align-items-center">
+                                <span class="bg-dark bg-opacity-10 p-2 rounded-3 me-2"><i class="fa-solid fa-calendar-alt text-dark"></i></span>
+                                Ýzin Çizelgesi
+                            </h6>
+                            <div class="row align-items-center">
+                                <div class="col-5">
+                                    <span class="label-tag">Baþlangýç</span>
+                                    <span class="value-text">@Model.BaslangicTarihi.ToString("dd MMMM yyyy")</span>
+                                    <div class="small text-muted">@Model.BaslangicTarihi.ToString("dddd")</div>
+                                </div>
+                                <div class="col-2 text-center">
+                                    <div class="badge bg-primary rounded-pill px-3 py-2">@gunSayisi GÜN</div>
+                                </div>
+                                <div class="col-5 text-end">
+                                    <span class="label-tag">Bitiþ</span>
+                                    <span class="value-text">@Model.BitisTarihi.ToString("dd MMMM yyyy")</span>
+                                    <div class="small text-muted">@Model.BitisTarihi.ToString("dddd")</div>
+                                </div>
+                            </div>
+                            <hr class="my-4">
+                            <div>
+                                <span class="label-tag">Personel Notu</span>
+                                <p class="text-secondary italic mb-0">"@(string.IsNullOrWhiteSpace(Model.Aciklama) ? "Açýklama girilmemiþ." : Model.Aciklama)"</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.YetkiliNotu))
+                    {
+                        <div class="col-12">
+                            <div class="info-group bg-light border-0">
+                                <span class="label-tag text-dark">Sistem/Yönetici Notu</span>
+                                <div class="d-flex mt-2">
+                                    <i class="fa-solid fa-quote-left text-muted me-3 fs-4"></i>
+                                    <p class="mb-0 fw-medium text-dark">@Model.YetkiliNotu</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (Model.Durum == "Beklemede")
+            {
+                <div class="floating-actions">
+                    <div class="text-muted small fw-medium">
+                        <i class="fa-solid fa-circle-exclamation me-1 text-primary"></i>
+                        Lütfen bu talebi onaylayýn veya reddedin.
+                    </div>
+                    <div class="d-flex gap-3">
+                        <button type="button" class="btn btn-action btn-outline-danger" data-bs-toggle="modal" data-bs-target="#redModal">
+                            <i class="fa-solid fa-xmark me-2"></i>Reddet
+                        </button>
+                        <button type="button" class="btn btn-action btn-approve shadow" data-bs-toggle="modal" data-bs-target="#onayModal">
+                            <i class="fa-solid fa-check me-2"></i>Talebi Onayla
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@* MODAL: Onay *@
+<div class="modal fade" id="onayModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title fw-bold">Talebi Onayla</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="TalebiOnayla" asp-route-id="@Model?.Id" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <p class="text-muted">Bu iþlem @Model?.Personel?.AdSoyad için izin kaydýný kesinleþtirecektir.</p>
+                    <label class="form-label small fw-bold">Onay Notu (Ýsteðe baðlý)</label>
+                    <textarea name="yetkiliNotu" class="form-control border-light-subtle" rows="2" style="background:#f8fafc"></textarea>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 shadow">Onaylýyorum</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* MODAL: Red *@
+<div class="modal fade" id="redModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title fw-bold">Talebi Reddet</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="TalebiReddet" asp-route-id="@Model?.Id" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <p class="text-muted">Reddetme nedenini personele bildirmek üzere aþaðýya yazýnýz.</p>
+                    <label class="form-label small fw-bold text-danger">Red Nedeni *</label>
+                    <textarea name="yetkiliNotu" class="form-control border-danger-subtle" rows="3" style="background:#fff1f2" required></textarea>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Ýptal</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow">Reddi Onayla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

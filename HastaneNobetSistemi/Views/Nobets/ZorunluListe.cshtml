@@ -1,0 +1,286 @@
+@model IEnumerable<HastaneNobetSistemi.Models.Personel>
+@using Microsoft.EntityFrameworkCore
+@inject HastaneNobetSistemi.Data.AppDbContext Context
+
+@{
+    ViewData["Title"] = "Zorunlu Nöbetçi Yönetimi";
+    var toplamZorunlu = ViewBag.ToplamZorunlu ?? 0;
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5253 100%);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    body {
+        background-color: #f4f7f6;
+    }
+
+    .page-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+        overflow: hidden;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+    .custom-table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+        .custom-table thead {
+            background-color: #f8f9fa;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+    .personel-avatar {
+        width: 40px;
+        height: 40px;
+        background: #eee;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #555;
+    }
+
+    .status-pill {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-nobet {
+        font-size: 0.7rem;
+        padding: 5px 10px;
+        border-radius: 6px;
+        margin-right: 3px;
+    }
+
+    .search-box {
+        border-radius: 20px;
+        padding-left: 40px;
+    }
+
+    .action-btn {
+        width: 35px;
+        height: 35px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="display-6 fw-bold mb-1"><i class="fas fa-shield-alt me-2"></i>Zorunlu Nöbetçi Sistemi</h1>
+            <p class="mb-0 opacity-75">Sistem, izinli personellerin yerine bu listedeki kiþileri sýrayla atar.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-light btn-lg rounded-pill px-4 shadow-sm">
+            <i class="fas fa-calendar-alt me-2 text-primary"></i>Nöbet Listesi
+        </a>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card h-100 shadow-sm border-start border-danger border-5">
+                <div class="card-body d-flex align-items-center">
+                    <div class="rounded-circle bg-light-danger p-3 me-3">
+                        <i class="fas fa-user-clock fa-2x text-danger"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0">Aktif Yedek Havuzu</h6>
+                        <h2 class="fw-bold mb-0">@toplamZorunlu <small class="fs-6 fw-normal text-muted">Kiþi</small></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card stat-card h-100 bg-white shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+                    <div class="p-2"><i class="fas fa-lightbulb fa-2x text-warning"></i></div>
+                    <div class="ms-3">
+                        <span class="fw-bold d-block text-dark">Çalýþma Mantýðý</span>
+                        <small class="text-muted">Bir personel izin aldýðýnda, sistem <strong>"Zorunlu Nöbetçi"</strong> listesindeki personellerin son nöbet tarihlerine bakar ve en uzun süredir nöbet tutmayan kiþiyi otomatik olarak atar.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">Görevli Yedek Listesi</h5>
+            <div class="position-relative">
+                <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" id="tableSearch" class="form-control search-box" placeholder="Personel Ara...">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 custom-table">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Personel</th>
+                        <th>Birim / Sicil</th>
+                        <th>Nöbet Yükü (Bu Ay)</th>
+                        <th>Son Görev</th>
+                        <th>Durum</th>
+                        <th class="text-end pe-4">Ýþlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var personel in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="personel-avatar me-3">
+                                        @personel.AdSoyad.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">@personel.AdSoyad</div>
+                                        <small class="text-muted">Giriþ: @personel.IseGirisTarihi.ToString("MMM yyyy")</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-dark fw-medium">@personel.Birim</div>
+                                <small class="badge bg-light text-dark border">#@personel.SicilNo</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-nobet bg-primary-subtle text-primary">H.Ýçi: @personel.BuAyHaftaIci</span>
+                                <span class="badge badge-nobet bg-warning-subtle text-warning-emphasis">H.Sonu: @personel.BuAyHaftaSonu</span>
+                            </td>
+                            <td>
+                                @if (personel.SonNobetTarihi.HasValue)
+                                {
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-dark">@personel.SonNobetTarihi.Value.ToString("dd.MM.yyyy")</span>
+                                        <small class="text-muted small">@((DateTime.Now - personel.SonNobetTarihi.Value).Days) gün önce</small>
+                                    </div>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted small">Hiç tutmadý</span>
+                                }
+                            </td>
+                            <td>
+                                @if (personel.IzinBaslangic.HasValue && DateTime.Today >= personel.IzinBaslangic.Value.Date && DateTime.Today <= personel.IzinBitis.Value.Date)
+                                {
+                                    <span class="status-pill bg-danger-subtle text-danger"><i class="fas fa-plane-departure me-1"></i>Ýzinli</span>
+                                }
+                                else
+                                {
+                                    <span class="status-pill bg-success-subtle text-success"><i class="fas fa-check-circle me-1"></i>Aktif</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <form asp-action="ZorunluDurumDegistir" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@personel.Id" />
+                                    <input type="hidden" name="zorunluMu" value="false" />
+                                    <button type="submit" class="btn btn-outline-danger action-btn" title="Listeden Kaldýr"
+                                            onclick="return confirm('Bu personeli listeden çýkarmak istediðinize emin misiniz?')">
+                                        <i class="fas fa-user-minus"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm bg-light">
+        <div class="card-body p-4 text-center">
+            <h5 class="fw-bold">Havuzu Geniþlet</h5>
+            <p class="text-muted">Zorunlu nöbetçi listesine yeni personel ekleyerek daðýtýmý daha adil hale getirebilirsiniz.</p>
+            <button class="btn btn-primary rounded-pill px-5" data-bs-toggle="collapse" data-bs-target="#addPersonelSection">
+                <i class="fas fa-plus-circle me-2"></i>Yeni Personel Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="collapse mt-3" id="addPersonelSection">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">Eklenebilir Personeller</div>
+            <div class="card-body p-0">
+                @{
+                    var digerpersoneller = await Context.Personeller
+                    .Where(p => !p.ZorunluNobetciMi && (p.AktifMi ?? true))
+                    .OrderBy(p => p.AdSoyad).ToListAsync();
+                }
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <tbody class="align-middle">
+                            @foreach (var p in digerpersoneller)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold">@p.AdSoyad</td>
+                                    <td>@p.Birim</td>
+                                    <td class="text-end pe-4">
+                                        <form asp-action="ZorunluDurumDegistir" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@p.Id" />
+                                            <input type="hidden" name="zorunluMu" value="true" />
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
+                                                <i class="fas fa-plus me-1"></i>Listeye Ekle
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tablo Arama Fonksiyonu
+    document.getElementById('tableSearch').addEventListener('keyup', function() {
+        let val = this.value.toLowerCase();
+        let rows = document.querySelectorAll('.custom-table tbody tr');
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
+        });
+    });
+</script>

@@ -1,0 +1,169 @@
+﻿@model HastaneNobetSistemi.Models.Personel
+@using Microsoft.EntityFrameworkCore
+@inject HastaneNobetSistemi.Data.AppDbContext Context
+
+@{
+    ViewData["Title"] = "Personel Profili";
+    // İlişkili kullanıcı bilgisini çekiyoruz (E-posta gösterimi için)
+    var systemUser = await Context.Users.FirstOrDefaultAsync(u => u.PersonelId == Model.Id);
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-8">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white">
+
+                <div class="card-header bg-dark p-5 border-0 position-relative">
+                    <div class="d-flex flex-column flex-md-row align-items-center position-relative" style="z-index: 2;">
+                        <div class="profile-avatar shadow-lg mb-3 mb-md-0 me-md-4">
+                            @(string.IsNullOrEmpty(Model.AdSoyad) ? "?" : Model.AdSoyad.Substring(0, 1).ToUpper())
+                        </div>
+
+                        <div class="text-center text-md-start text-white">
+                            <h2 class="fw-bold mb-1">@Model.AdSoyad</h2>
+                            <p class="opacity-75 mb-2 fs-5">@Model.Birim | #@Model.SicilNo</p>
+                            <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-2 mt-2">
+                                @if (Model.AktifMi ?? true)
+                                {
+                                    <span class="badge bg-success rounded-pill px-3 py-2"><i class="fas fa-check-circle me-1"></i> Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger rounded-pill px-3 py-2"><i class="fas fa-times-circle me-1"></i> Pasif</span>
+                                }
+
+                                @if (Model.ZorunluNobetciMi)
+                                {
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i class="fas fa-shield-halved me-1"></i> Zorunlu Yedek</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    <div class="row g-5">
+
+                        <div class="col-lg-6">
+                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">Erişim & Kimlik</h5>
+
+                            <div class="info-item mb-4">
+                                <label class="text-muted small text-uppercase fw-bold">E-posta Adresi</label>
+                                <div class="d-flex align-items-center mt-1">
+                                    <i class="fas fa-envelope text-primary me-3 fs-5"></i>
+                                    <span class="fw-medium">@(systemUser?.Email ?? "Hesap Oluşturulmamış")</span>
+                                </div>
+                            </div>
+
+                            <div class="info-item mb-4">
+                                <label class="text-muted small text-uppercase fw-bold">Sicil Numarası</label>
+                                <div class="d-flex align-items-center mt-1">
+                                    <i class="fas fa-id-card text-primary me-3 fs-5"></i>
+                                    <span class="fw-medium">@Model.SicilNo</span>
+                                </div>
+                            </div>
+
+                            <div class="info-item mb-0">
+                                <label class="text-muted small text-uppercase fw-bold">Kuruma Giriş</label>
+                                <div class="d-flex align-items-center mt-1">
+                                    <i class="fas fa-calendar-check text-primary me-3 fs-5"></i>
+                                    <span class="fw-medium">@Model.IseGirisTarihi.ToString("dd MMMM yyyy")</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">Nöbet İstatistikleri</h5>
+
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="stat-box p-3 rounded-4 border text-center">
+                                        <div class="text-muted small mb-1">Hafta İçi</div>
+                                        <div class="fs-3 fw-bold text-dark">@Model.ToplamHaftaIci</div>
+                                        <div class="text-xs text-primary">Toplam Nöbet</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-box p-3 rounded-4 border text-center">
+                                        <div class="text-muted small mb-1">Hafta Sonu</div>
+                                        <div class="fs-3 fw-bold text-dark">@Model.ToplamHaftaSonu</div>
+                                        <div class="text-xs text-warning">Toplam Nöbet</div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="stat-box p-3 rounded-4 border d-flex align-items-center justify-content-between px-4">
+                                        <div class="text-start">
+                                            <div class="text-muted small">Son Nöbet Tarihi</div>
+                                            <div class="fw-bold fs-6">@(Model.SonNobetTarihi?.ToString("dd.MM.yyyy") ?? "Kayıt Yok")</div>
+                                        </div>
+                                        <i class="fas fa-history text-muted fs-3 opacity-25"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-5 opacity-25">
+
+                    <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                        <a asp-action="Index" class="btn btn-light btn-lg rounded-pill px-5 fw-bold text-dark border transition-all">
+                            <i class="fas fa-arrow-left me-2"></i> Listeye Dön
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm transition-all">
+                            <i class="fas fa-user-edit me-2"></i> Profili Düzenle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: white;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 800;
+        border-radius: 30px;
+        border: 4px solid rgba(255,255,255,0.2);
+    }
+
+    .stat-box {
+        background-color: #fcfcfc;
+        transition: all 0.2s ease;
+    }
+
+        .stat-box:hover {
+            background-color: white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border-color: #0d6efd;
+        }
+
+    .text-xs {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+    }
+
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+
+        .transition-all:hover {
+            transform: translateY(-2px);
+        }
+</style>

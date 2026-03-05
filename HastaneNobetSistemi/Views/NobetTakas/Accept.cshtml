@@ -1,0 +1,61 @@
+﻿@model HastaneNobetSistemi.Models.NobetTakas
+
+@{
+    ViewData["Title"] = "Takas Teklifini Kabul Et";
+    var takas = ViewBag.Takas as HastaneNobetSistemi.Models.NobetTakas;
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-header bg-warning bg-opacity-25 border-0 py-3">
+                    <h4 class="mb-0">
+                        <i class="fa-solid fa-handshake me-2"></i>Takas Teklifini Kabul Et
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Teklif Detayları -->
+                    <div class="alert alert-info">
+                        <h5><i class="fa-solid fa-user-doctor me-2"></i>@Model.TeklifEdenPersonel.AdSoyad</h5>
+                        <p class="mb-1">
+                            <strong>Takas Edilecek Nöbet:</strong>
+                            @Model.TeklifEdilenNobet.Tarih.ToString("dd MMMM yyyy dddd")
+                            <span class="badge bg-secondary ms-2">@Model.TeklifEdilenNobet.NobetTipi</span>
+                        </p>
+                        <p class="mb-0"><strong>Açıklama:</strong> @Model.Aciklama</p>
+                    </div>
+
+                    <!-- Karşılık Nöbet Seçimi -->
+                    <form asp-action="AcceptConfirm" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-danger">
+                                <i class="fa-solid fa-exchange-alt me-2"></i>Karşılığında Vereceğiniz Nöbet
+                            </label>
+                            <select name="karsilikNobetId" class="form-select" asp-items="ViewBag.KarsilikNobetler" required>
+                                <option value="">-- Nöbet Seçiniz --</option>
+                            </select>
+                            <small class="text-muted">Aynı tip nöbetleriniz listeleniyor</small>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                            <strong>Dikkat:</strong> Takası onayladığınızda nöbetler otomatik olarak değiştirilecektir.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fa-solid fa-check-circle me-2"></i>Takası Onayla
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fa-solid fa-arrow-left me-2"></i>Vazgeç
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,59 @@
+﻿@model HastaneNobetSistemi.Models.NobetTakas
+
+@{
+    ViewData["Title"] = "Yeni Takas Teklifi";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-success bg-opacity-10 border-0 py-3">
+                    <h4 class="mb-0">
+                        <i class="fa-solid fa-plus-circle me-2"></i>Yeni Nöbet Takas Teklifi
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fa-solid fa-calendar-alt text-primary me-2"></i>Takas Etmek İstediğiniz Nöbet
+                            </label>
+                            <select asp-for="TeklifEdilenNobetId" class="form-select" asp-items="ViewBag.GelecekNobetlerim" required>
+                                <option value="">-- Nöbet Seçiniz --</option>
+                            </select>
+                            <small class="text-muted">Sadece gelecekteki nöbetlerinizi takas edebilirsiniz</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fa-solid fa-user text-warning me-2"></i>Hedef Personel (Opsiyonel)
+                            </label>
+                            <select asp-for="HedefPersonelId" class="form-select" asp-items="ViewBag.DigerPersoneller">
+                                <option value="">-- Herkese Açık Teklif --</option>
+                            </select>
+                            <small class="text-muted">Boş bırakırsanız tüm personeller teklifinizi görebilir</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fa-solid fa-comment-dots text-info me-2"></i>Takas Nedeni
+                            </label>
+                            <textarea asp-for="Aciklama" class="form-control" rows="4"
+                                      placeholder="Örn: Aile etkinliği, sağlık durumu, önemli randevu..." required></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fa-solid fa-paper-plane me-2"></i>Teklif Gönder
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fa-solid fa-arrow-left me-2"></i>Geri Dön
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

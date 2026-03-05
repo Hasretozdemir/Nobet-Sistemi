@@ -1,0 +1,114 @@
+﻿/* --- MODERN MINIMALIST TEMA --- */
+:root {
+    --sidebar-bg: #1e293b;
+    --primary-blue: #3b82f6;
+    --text-main: #334155;
+    --bg-body: #f8fafc;
+    --border-color: #e2e8f0;
+}
+
+body {
+    font-family: 'Inter', 'Poppins', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-size: 0.875rem; /* Yazı boyutları standartlaştırıldı */
+    overflow-x: hidden;
+}
+
+/* Sidebar Tasarımı */
+#sidebar-wrapper {
+    min-height: 100vh;
+    width: 240px;
+    background: var(--sidebar-bg);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+#sidebar-wrapper .nav-link {
+    color: #94a3b8;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.85rem;
+    border-radius: 0;
+    transition: all 0.2s;
+}
+
+#sidebar-wrapper .nav-link:hover, 
+#sidebar-wrapper .nav-link.active {
+    color: white;
+    background: rgba(255,255,255,0.05);
+}
+
+#sidebar-wrapper .nav-link i {
+    width: 20px;
+    font-size: 1rem;
+}
+
+/* Sayfa İçeriği */
+#page-content-wrapper {
+    width: 100%;
+    transition: all 0.3s ease;
+    padding: 1.5rem;
+}
+
+/* Buton Standartları */
+.btn {
+    font-size: 0.8rem; /* Küçük ve şık butonlar */
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-primary { background-color: var(--primary-blue); border: none; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2); }
+
+/* Modern Tablo Tasarımı (Nöbet Listeleri İçin) */
+.table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+}
+
+.table thead th {
+    background-color: #f1f5f9;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.025em;
+    padding: 0.75rem 1rem;
+    border: none;
+}
+
+.table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Menü Toggle Butonu */
+#menu-toggle-btn {
+    position: fixed;
+    left: 225px;
+    top: 20px;
+    z-index: 1001;
+    background: white;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+#sidebar-wrapper.active { margin-left: -240px; }
+#menu-toggle-btn.active { left: 15px; }

@@ -1,0 +1,283 @@
+﻿@{
+    ViewData["Title"] = "Personel Paneli";
+    var personel = ViewBag.Personel as HastaneNobetSistemi.Models.Personel;
+    var gelecekNobetler = ViewBag.GelecekNobetler as List<HastaneNobetSistemi.Models.Nobet>;
+    var gecmisNobetler = ViewBag.GecmisNobetler as List<HastaneNobetSistemi.Models.Nobet>;
+    var bekleyenIzinTalepleri = ViewBag.BekleyenIzinTalepleri as int? ?? 0;
+    var bekleyenTakaslar = ViewBag.BekleyenTakaslar as int? ?? 0;
+    var onaylananIzinler = ViewBag.OnaylananIzinler as List<HastaneNobetSistemi.Models.IzinTalebi>;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        background-color: #f4f7fe;
+        font-family: 'Inter', sans-serif;
+        color: #2d3748;
+    }
+
+    /* Üst Karşılama Alanı */
+    .welcome-banner {
+        background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+        border-radius: 24px;
+        box-shadow: 0 10px 25px rgba(67, 97, 238, 0.15);
+    }
+
+    /* Kart Tasarımları */
+    .custom-card {
+        border: none;
+        border-radius: 20px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        background: #fff;
+    }
+
+        .custom-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.05);
+        }
+
+    /* Hızlı İşlem İkonları */
+    .action-icon {
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        margin: 0 auto 12px;
+        font-size: 1.5rem;
+    }
+
+    /* Bildirim Badge */
+    .badge-notif {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 5px 8px;
+        font-size: 0.75rem;
+        border: 2px solid #fff;
+    }
+
+    /* Liste Tasarımı */
+    .nobet-item {
+        border-left: 4px solid transparent;
+        transition: all 0.2s;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        background: #f8fafc;
+    }
+
+        .nobet-item:hover {
+            background: #f1f5f9;
+            border-left-color: #4361ee;
+        }
+
+    .nobet-today {
+        border-left-color: #e63946;
+        background: #fff1f2 !important;
+    }
+
+    /* İstatistikler */
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a202c;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #718096;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Linkler */
+    .alert-link-custom {
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container py-4">
+
+    <div class="welcome-banner p-4 p-md-5 mb-5 text-white position-relative overflow-hidden">
+        <div class="row align-items-center position-relative" style="z-index: 2;">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">Tekrar Merhaba, @(personel.AdSoyad.Split(' ')[0])!</h2>
+                <p class="opacity-75 mb-0 d-flex align-items-center">
+                    <i class="fa-solid fa-hospital-user me-2"></i> @personel.Birim Bölümü Personeli
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="bg-white bg-opacity-20 d-inline-block p-3 rounded-4 backdrop-blur">
+                    <small class="d-block opacity-75">Sistem Tarihi</small>
+                    <span class="fw-bold fs-5">@DateTime.Now.ToString("dd MMMM yyyy")</span>
+                </div>
+            </div>
+        </div>
+        <i class="fa-solid fa-stethoscope position-absolute opacity-10" style="font-size: 150px; right: -20px; bottom: -30px;"></i>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+
+            @if (bekleyenTakaslar > 0 || bekleyenIzinTalepleri > 0 || onaylananIzinler?.Any() == true)
+            {
+                <div class="card custom-card shadow-sm mb-4 border-0">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-bell-concierge me-2 text-primary"></i>Güncel Durum</h6>
+
+                        @if (bekleyenTakaslar > 0)
+                        {
+                            <div class="d-flex align-items-center p-3 rounded-4 bg-warning bg-opacity-10 mb-2">
+                                <i class="fa-solid fa-arrows-rotate text-warning fs-4 me-3"></i>
+                                <div class="flex-grow-1">
+                                    <span class="d-block fw-bold text-dark">Takas Onayı Bekliyor</span>
+                                    <small class="text-muted">@bekleyenTakaslar adet yeni talep var.</small>
+                                </div>
+                                <a asp-controller="NobetTakas" asp-action="Index" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold">İncele</a>
+                            </div>
+                        }
+
+                        @if (onaylananIzinler?.Any() == true)
+                        {
+                            @foreach (var izin in onaylananIzinler.Take(1))
+                            {
+                                <div class="d-flex align-items-center p-3 rounded-4 bg-success bg-opacity-10">
+                                    <i class="fa-solid fa-umbrella-beach text-success fs-4 me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <span class="d-block fw-bold text-dark">Yaklaşan İzniniz</span>
+                                        <small class="text-muted">@izin.BaslangicTarihi.ToString("dd MMM") - @izin.BitisTarihi.ToString("dd MMM") tarihleri arası.</small>
+                                    </div>
+                                    <span class="badge bg-success rounded-pill px-3">Onaylandı</span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="row mb-4 g-3 text-center">
+                <div class="col-6 col-md-3">
+                    <a asp-action="NobetListesi" class="card custom-card shadow-sm p-3 text-decoration-none h-100">
+                        <div class="action-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </div>
+                        <span class="d-block fw-bold text-dark small">Nöbet Listesi</span>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a asp-controller="Izin" asp-action="TalepOlustur" class="card custom-card shadow-sm p-3 text-decoration-none h-100 position-relative">
+                        <div class="action-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </div>
+                        <span class="d-block fw-bold text-dark small">İzin Talebi</span>
+                        @if (bekleyenIzinTalepleri > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger badge-notif">@bekleyenIzinTalepleri</span>
+                        }
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a asp-controller="NobetTakas" asp-action="Index" class="card custom-card shadow-sm p-3 text-decoration-none h-100 position-relative">
+                        <div class="action-icon bg-info bg-opacity-10 text-info">
+                            <i class="fa-solid fa-arrows-left-right"></i>
+                        </div>
+                        <span class="d-block fw-bold text-dark small">Nöbet Takası</span>
+                        @if (bekleyenTakaslar > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger badge-notif">@bekleyenTakaslar</span>
+                        }
+                    </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a asp-action="NobetGecmisim" class="card custom-card shadow-sm p-3 text-decoration-none h-100">
+                        <div class="action-icon bg-success bg-opacity-10 text-success">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <span class="d-block fw-bold text-dark small">Nöbet Geçmişi</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card custom-card shadow-sm border-0 mb-4">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0 text-dark">Gelecek Nöbetlerim</h6>
+                    <a asp-action="NobetListesi" class="small alert-link-custom text-primary">Tümünü Gör</a>
+                </div>
+                <div class="card-body p-4">
+                    @if (gelecekNobetler?.Any() != true)
+                    {
+                        <div class="text-center py-4">
+                            <img src="https://cdn-icons-png.flaticon.com/512/4076/4076432.png" width="60" class="opacity-25 mb-3">
+                            <p class="text-muted small">Planlanmış bir nöbetiniz bulunmuyor.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var nobet in gelecekNobetler.Take(4))
+                        {
+                            var bugunku = nobet.Tarih.Date == DateTime.Today;
+                            <div class="p-3 nobet-item d-flex justify-content-between align-items-center @(bugunku ? "nobet-today" : "")">
+                                <div class="d-flex align-items-center">
+                                    <div class="text-center me-3 border-end pe-3">
+                                        <span class="d-block fw-bold fs-5">@nobet.Tarih.Day</span>
+                                        <small class="text-muted uppercase">@nobet.Tarih.ToString("MMM")</small>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold d-block text-dark">@nobet.Tarih.ToString("dddd")</span>
+                                        <span class="badge @(nobet.NobetTipi == "HaftaIci" ? "bg-secondary" : "bg-warning text-dark") rounded-pill" style="font-size: 0.65rem;">
+                                            @nobet.NobetTipi
+                                        </span>
+                                    </div>
+                                </div>
+                                @if (bugunku)
+                                {
+                                    <span class="badge bg-danger rounded-pill px-3">BUGÜN</span>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card custom-card shadow-sm mb-4 border-0">
+                <div class="card-body p-4 text-center">
+                    <div class="bg-primary bg-opacity-10 p-4 rounded-circle d-inline-block mb-3">
+                        <i class="fa-solid fa-user-doctor fs-1 text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold mb-1">@personel.AdSoyad</h5>
+                    <p class="text-muted small mb-4">@personel.SicilNo | @personel.Birim</p>
+                    <hr>
+                    <div class="row">
+                        <div class="col-6 border-end">
+                            <span class="stat-label d-block">Hafta İçi</span>
+                            <span class="stat-value">@personel.ToplamHaftaIci</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="stat-label d-block">Hafta Sonu</span>
+                            <span class="stat-value">@personel.ToplamHaftaSonu</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card custom-card shadow-sm border-0 bg-dark text-white p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="stat-label d-block text-white-50">Toplam Nöbet</span>
+                        <h2 class="fw-bold mb-0">@(personel.ToplamHaftaIci + personel.ToplamHaftaSonu + personel.ToplamBayram)</h2>
+                    </div>
+                    <div class="bg-white bg-opacity-20 p-3 rounded-4">
+                        <i class="fa-solid fa-chart-pie fs-3 text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

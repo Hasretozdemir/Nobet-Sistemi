@@ -1,0 +1,331 @@
+﻿@model HastaneNobetSistemi.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Giriş Yap";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Hastane Nöbet Sistemi</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        :root {
+            --yetkili-color: #667eea;
+            --yetkili-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --personel-color: #43cea2;
+            --personel-grad: linear-gradient(135deg, #43cea2 0%,| #185a9d 100%);
+            --transition-speed: 0.5s;
+        }
+
+        body {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+            transition: all 1s ease;
+        }
+
+        .circle-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--yetkili-color);
+            top: -10%;
+            left: -10%;
+        }
+
+        .circle-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--personel-color);
+            bottom: -5%;
+            right: -5%;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .page-header-section {
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+            .page-header-section img {
+                height: 90px;
+                filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+                margin-bottom: 15px;
+            }
+
+        .toggle-wrapper {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 5px;
+            border-radius: 15px;
+            display: flex;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 2;
+            transition: 0.3s;
+        }
+
+        .toggle-indicator {
+            position: absolute;
+            width: calc(50% - 5px);
+            height: calc(100% - 10px);
+            background: white;
+            border-radius: 12px;
+            top: 5px;
+            left: 5px;
+            transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .card-stack {
+            position: relative;
+            height: 520px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 40px;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+            pointer-events: none;
+            filter: blur(10px);
+        }
+
+            .login-card.active {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+                pointer-events: all;
+                filter: blur(0);
+            }
+
+        .form-control {
+            border: 1px solid #eee;
+            padding: 12px 15px;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+            .form-control:focus {
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                border-color: var(--yetkili-color);
+                outline: none;
+            }
+
+        .btn-custom {
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            width: 100%;
+            transition: 0.3s;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+            .btn-custom:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            }
+
+        .yetkili-theme {
+            background: var(--yetkili-grad);
+        }
+
+        .personel-theme {
+            background: var(--personel-grad);
+        }
+
+        .toggle-btn.active-tab {
+            color: #1a1a2e !important;
+        }
+
+        /* Form temizleme için */
+        .login-card:not(.active) input {
+            visibility: hidden;
+        }
+
+        .login-card.active input {
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-circle circle-1" id="c1"></div>
+    <div class="bg-circle circle-2" id="c2"></div>
+
+    <div class="main-container">
+
+        <div class="page-header-section">
+            <img src="~/images/gazi-logo.png" alt="Gazi Logo">
+            <h2 class="fw-bold">Hastane Nöbet Sistemi</h2>
+            <p class="small text-white-50">Lütfen giriş yapmak için kullanıcı tipinizi seçiniz</p>
+        </div>
+
+        <div class="toggle-wrapper">
+            <div class="toggle-indicator" id="indicator"></div>
+            <button type="button" class="toggle-btn active-tab" id="btn-yetkili" onclick="showTab('yetkili')">Yetkili</button>
+            <button type="button" class="toggle-btn" id="btn-personel" onclick="showTab('personel')">Personel</button>
+        </div>
+
+        <div class="card-stack">
+
+            <!-- YETKİLİ GİRİŞİ -->
+            <div class="login-card active" id="card-yetkili">
+                <div class="text-center mb-4">
+                    <div class="display-6 mb-2"><i class="fa-solid fa-user-shield text-primary"></i></div>
+                    <h4 class="fw-bold">Yetkili Girişi</h4>
+                </div>
+                <form asp-action="Login" method="post" id="yetkili-form" autocomplete="off">
+                    <input type="hidden" name="UserType" value="Yetkili" />
+                    <div class="mb-3">
+                        <label class="small fw-bold text-muted">E-posta</label>
+                        <input name="Email"
+                               type="email"
+                               class="form-control"
+                               placeholder="admin@hastane.com"
+                               autocomplete="off"
+                               required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="small fw-bold text-muted">Şifre</label>
+                        <input name="Password"
+                               type="password"
+                               class="form-control"
+                               placeholder="••••••"
+                               autocomplete="new-password"
+                               required>
+                    </div>
+                    <button type="submit" class="btn-custom yetkili-theme">GİRİŞ YAP</button>
+                    <div class="mt-4 p-3 bg-light rounded-3 small">
+                        <strong>Demo:</strong> admin@hastane.com / Admin123!
+                    </div>
+                </form>
+            </div>
+
+            <!-- PERSONEL GİRİŞİ -->
+            <div class="login-card" id="card-personel">
+                <div class="text-center mb-4">
+                    <div class="display-6 mb-2"><i class="fa-solid fa-user-doctor text-success"></i></div>
+                    <h4 class="fw-bold">Personel Girişi</h4>
+                </div>
+                <form asp-action="Login" method="post" id="personel-form" autocomplete="off">
+                    <input type="hidden" name="UserType" value="Personel" />
+                    <div class="mb-3">
+                        <label class="small fw-bold text-muted">E-posta</label>
+                        <input name="Email"
+                               type="email"
+                               class="form-control"
+                               placeholder="personel@hastane.com"
+                               autocomplete="off"
+                               required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="small fw-bold text-muted">Şifre</label>
+                        <input name="Password"
+                               type="password"
+                               class="form-control"
+                               placeholder="••••••"
+                               autocomplete="new-password"
+                               required>
+                    </div>
+                    <button type="submit" class="btn-custom personel-theme">GİRİŞ YAP</button>
+                    <div class="text-center mt-4">
+                        <a asp-action="Register" class="text-decoration-none small fw-bold text-success">
+                            Hesabınız yok mu? Hemen Kayıt Ol
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Sayfa yüklendiğinde formları temizle
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[type="email"], input[type="password"]').forEach(input => {
+                input.value = '';
+            });
+        });
+
+        function showTab(type) {
+            const indicator = document.getElementById('indicator');
+            const cardYetkili = document.getElementById('card-yetkili');
+            const cardPersonel = document.getElementById('card-personel');
+            const btnYetkili = document.getElementById('btn-yetkili');
+            const btnPersonel = document.getElementById('btn-personel');
+            const c1 = document.getElementById('c1');
+            const c2 = document.getElementById('c2');
+
+            // Formlardaki değerleri temizle
+            const inactiveCard = type === 'yetkili' ? cardPersonel : cardYetkili;
+            inactiveCard.querySelectorAll('input[type="email"], input[type="password"]').forEach(input => {
+                input.value = '';
+            });
+
+            if (type === 'yetkili') {
+                indicator.style.transform = 'translateX(0)';
+                cardYetkili.classList.add('active');
+                cardPersonel.classList.remove('active');
+                btnYetkili.classList.add('active-tab');
+                btnPersonel.classList.remove('active-tab');
+
+                c1.style.transform = 'translate(0, 0)';
+                c2.style.transform = 'translate(0, 0)';
+            } else {
+                indicator.style.transform = 'translateX(100%)';
+                cardYetkili.classList.remove('active');
+                cardPersonel.classList.add('active');
+                btnYetkili.classList.remove('active-tab');
+                btnPersonel.classList.add('active-tab');
+
+                c1.style.transform = 'translate(50px, 50px)';
+                c2.style.transform = 'translate(-50px, -50px)';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Sistem Hatası";
+}
+
+<div class="row justify-content-center mt-5 mb-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 rounded-4 border-top border-danger border-5">
+
+            <div class="card-body p-4 p-md-5 text-center">
+
+                <div class="mb-4">
+                    <i class="fa-solid fa-server fa-4x mb-3 text-danger opacity-75 animation-pulse"></i>
+                    <h2 class="fw-bold text-dark">Sistemsel Bir Sorun Oluştu!</h2>
+                    <p class="text-muted fs-5 mt-2">İşleminiz gerçekleştirilirken beklenmeyen bir sunucu hatasıyla karşılaştık. Lütfen işlemi tekrar deneyin veya IT birimine bilgi verin.</p>
+                </div>
+
+                @if (Model.ShowRequestId)
+                {
+                    <div class="bg-danger bg-opacity-10 rounded-3 p-3 mb-4 border border-danger border-opacity-25 shadow-sm">
+                        <p class="mb-1 fw-semibold text-danger">
+                            <i class="fa-solid fa-bug me-2"></i>Arıza Takip Kodu (Request ID)
+                        </p>
+                        <code class="fs-5 text-dark fw-bold user-select-all">@Model.RequestId</code>
+                    </div>
+                }
+
+                <div class="alert alert-light border shadow-sm text-start text-muted small mb-4 rounded-3">
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="fa-solid fa-code me-2 text-primary"></i>Geliştirici Modu Bilgisi
+                    </h6>
+                    <p class="mb-2">Detaylı hata fırlatma analizlerini (Exceptions) görmek için <strong>ASPNETCORE_ENVIRONMENT</strong> değişkenini <strong>Development</strong> olarak ayarlayabilirsiniz.</p>
+                    <p class="mb-0 text-warning fw-semibold">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i>Dikkat: Veri güvenliği için canlı (Deploy) ortamda bu mod kesinlikle kapalı kalmalıdır!
+                    </p>
+                </div>
+
+                <div class="mt-2">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-danger px-5 py-2 fw-bold rounded-pill shadow-sm transition-hover">
+                        <i class="fa-solid fa-house-medical me-2"></i>Kontrol Paneline Dön
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .animation-pulse {
+            animation: pulse-error 2s infinite;
+        }
+
+        @@keyframes pulse-error {
+            0% {
+                transform: scale(1);
+                opacity: 0.75;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+                color: #dc3545;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.75;
+            }
+        }
+
+        .transition-hover {
+            transition: all 0.3s ease;
+        }
+
+            .transition-hover:hover {
+                transform: translateY(-2px);
+            }
+    </style>
+}

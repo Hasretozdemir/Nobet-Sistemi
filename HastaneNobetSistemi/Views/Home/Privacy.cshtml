@@ -1,0 +1,69 @@
+﻿@section Scripts {
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-size: 0.95rem;
+        }
+
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .bg-blue-soft {
+            background-color: #eff6ff;
+        }
+
+        .bg-green-soft {
+            background-color: #f0fdf4;
+        }
+
+        .bg-yellow-soft {
+            background-color: #fffbeb;
+        }
+
+        .policy-section p {
+            line-height: 1.7;
+            padding-left: 52px;
+        }
+
+        .info-box {
+            background-color: #f1f5f9 !important;
+            margin-left: 52px;
+        }
+
+        /* --- Hata Buradaydı: @@media şeklinde düzeltildi --- */
+        @@media (max-width: 768px) {
+            .policy-section p {
+                padding-left: 0;
+            }
+
+            .info-box {
+                margin-left: 0;
+            }
+
+            .section-icon {
+                margin-bottom: 10px;
+            }
+
+            .policy-section .d-flex {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #64748b;
+            border-color: #64748b;
+            color: white;
+            transform: translateY(-2px);
+            transition: all 0.2s ease;
+        }
+    </style>
+}

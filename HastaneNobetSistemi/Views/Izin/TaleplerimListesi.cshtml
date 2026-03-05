@@ -1,0 +1,286 @@
+@model IEnumerable<HastaneNobetSistemi.Models.IzinTalebi>
+
+@{
+    ViewData["Title"] = "Ýzin Taleplerim";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        background-color: #f3f4f6;
+        font-family: 'Inter', sans-serif;
+    }
+
+    h2, h3, h5 {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Üst Alan */
+    .page-header {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* Ýstatistik Kartlarý */
+    .stat-card {
+        border: none;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        background: white;
+        overflow: hidden;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+    .stat-icon-box {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Tablo Tasarýmý */
+    .custom-table-card {
+        background: white;
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: none;
+        padding: 1.2rem 1rem;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .table tbody tr:last-child {
+            border: none;
+        }
+
+    /* Badge & Butonlar */
+    .badge-pill-custom {
+        padding: 8px 16px;
+        border-radius: 100px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    }
+
+        .btn-create:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            color: white;
+            transform: scale(1.02);
+        }
+
+    .btn-cancel {
+        color: #ef4444;
+        background: #fef2f2;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+        .btn-cancel:hover {
+            background: #ef4444;
+            color: white;
+        }
+</style>
+
+<div class="container py-5">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4 p-3" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-circle-check fs-4 me-3"></i>
+                <div><strong>Baþarýlý!</strong> @TempData["SuccessMessage"]</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-4">
+        <div>
+            <h2 class="mb-1 fw-bold text-dark">Ýzin Yönetimi</h2>
+            <p class="text-muted mb-0">Merhaba, taleplerinizin güncel durumunu buradan izleyebilirsiniz.</p>
+        </div>
+        <a asp-action="TalepOlustur" class="btn btn-create">
+            <i class="fa-solid fa-plus me-2"></i>Yeni Talep Oluþtur
+        </a>
+    </div>
+
+    @{
+        var bekleyen = Model.Count(i => i.Durum == "Beklemede");
+        var onaylanan = Model.Count(i => i.Durum == "Onaylandi");
+        var reddedilen = Model.Count(i => i.Durum == "Reddedildi");
+    }
+
+    <div class="row mb-5 g-4">
+        <div class="col-md-4">
+            <div class="card stat-card shadow-sm p-4 border-start border-warning border-5">
+                <div class="stat-icon-box bg-warning bg-opacity-10 text-warning">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <h3 class="fw-bold mb-0">@bekleyen</h3>
+                <p class="text-muted mb-0 fw-medium">Bekleyen Talepler</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card shadow-sm p-4 border-start border-success border-5">
+                <div class="stat-icon-box bg-success bg-opacity-10 text-success">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <h3 class="fw-bold mb-0">@onaylanan</h3>
+                <p class="text-muted mb-0 fw-medium">Onaylanan Ýzinler</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card shadow-sm p-4 border-start border-danger border-5">
+                <div class="stat-icon-box bg-danger bg-opacity-10 text-danger">
+                    <i class="fa-solid fa-calendar-xmark"></i>
+                </div>
+                <h3 class="fw-bold mb-0">@reddedilen</h3>
+                <p class="text-muted mb-0 fw-medium">Reddedilen Talepler</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-table-card shadow-sm">
+        <div class="p-4 border-bottom bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="fa-solid fa-list-ul me-2 text-primary"></i>Talep Geçmiþi</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">BAÞVURU TARÝHÝ</th>
+                        <th>ÝZÝN TARÝHLERÝ</th>
+                        <th>SÜRE</th>
+                        <th>DURUM</th>
+                        <th class="text-end pe-4">ÝÞLEM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <img src="https://cdn-icons-png.flaticon.com/512/5058/5058436.png" width="60" class="opacity-25 mb-3 d-block mx-auto">
+                                <span class="text-muted fw-medium">Henüz bir izin talebi oluþturmadýnýz.</span>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var talep in Model.OrderByDescending(t => t.TalepTarihi))
+                    {
+                        var gunSayisi = (talep.BitisTarihi.Date - talep.BaslangicTarihi.Date).Days + 1;
+                        <tr>
+                            <td class="ps-4 text-muted small">@talep.TalepTarihi.ToString("dd MMM yyyy HH:mm")</td>
+                            <td>
+                                <div class="fw-bold text-dark">
+                                    @talep.BaslangicTarihi.ToString("dd.MM.yyyy") - @talep.BitisTarihi.ToString("dd.MM.yyyy")
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border fw-semibold">@gunSayisi Gün</span>
+                            </td>
+                            <td>
+                                @if (talep.Durum == "Beklemede")
+                                {
+                                    <span class="badge-pill-custom bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">
+                                        <i class="fa-solid fa-spinner fa-spin-fast"></i> Beklemede
+                                    </span>
+                                }
+                                else if (talep.Durum == "Onaylandi")
+                                {
+                                    <span class="badge-pill-custom bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                        <i class="fa-solid fa-check-double"></i> Onaylandý
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-pill-custom bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
+                                        <i class="fa-solid fa-circle-xmark"></i> Reddedildi
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                @if (talep.Durum == "Beklemede")
+                                {
+                                    <a asp-action="TalepSil" asp-route-id="@talep.Id" class="btn-cancel" onclick="return confirm('Talebinizi geri çekmek istediðinize emin misiniz?')">
+                                        <i class="fa-solid fa-trash-can me-1"></i> Ýptal
+                                    </a>
+                                }
+                                else if (talep.Durum == "Reddedildi" && !string.IsNullOrEmpty(talep.YetkiliNotu))
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#notModal@(talep.Id)">
+                                        <i class="fa-solid fa-comment-dots me-1"></i> Notu Gör
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">---</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* RED NOTU MODALLARI *@
+@foreach (var talep in Model.Where(t => t.Durum == "Reddedildi" && !string.IsNullOrEmpty(t.YetkiliNotu)))
+{
+    <div class="modal fade" id="notModal@(talep.Id)" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-danger text-white border-0 py-3">
+                    <h6 class="modal-title fw-bold"><i class="fa-solid fa-comment-slash me-2"></i>Red Gerekçesi</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="text-dark fw-medium mb-0">"@talep.YetkiliNotu"</p>
+                </div>
+                <div class="modal-footer border-0 pb-4 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Anladým</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

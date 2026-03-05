@@ -1,0 +1,72 @@
+﻿@model HastaneNobetSistemi.Models.Bayram
+
+@{
+    ViewData["Title"] = "Bayram Düzenle";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow border-0 rounded-4">
+
+            <div class="card-header bg-warning text-dark text-center py-3 rounded-top-4 shadow-sm">
+                <h4 class="mb-0 fw-bold">
+                    <i class="fa-solid fa-pen-to-square me-2"></i>Tatil / Bayram Kaydını Düzenle
+                </h4>
+            </div>
+
+            <div class="card-body p-4 p-md-5 bg-white rounded-bottom-4">
+                <form asp-action="Edit">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 fw-semibold"></div>
+
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="BayramAdi" class="form-control" placeholder="Bayram Adı" autocomplete="off" />
+                        <label asp-for="BayramAdi">
+                            <i class="fa-solid fa-tag me-1 text-muted"></i> Bayram Adı
+                        </label>
+                        <span asp-validation-for="BayramAdi" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-4">
+                                <input asp-for="BaslangicTarihi" class="form-control" type="date" />
+                                <label asp-for="BaslangicTarihi">
+                                    <i class="fa-solid fa-hourglass-start me-1 text-muted"></i> Başlangıç Tarihi
+                                </label>
+                                <span asp-validation-for="BaslangicTarihi" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-4">
+                                <input asp-for="BitisTarihi" class="form-control" type="date" />
+                                <label asp-for="BitisTarihi">
+                                    <i class="fa-solid fa-hourglass-end me-1 text-muted"></i> Bitiş Tarihi
+                                </label>
+                                <span asp-validation-for="BitisTarihi" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="text-muted my-4" />
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 fw-semibold rounded-3">
+                            <i class="fa-solid fa-arrow-left me-2"></i>İptal Et
+                        </a>
+                        <button type="submit" class="btn btn-success px-5 py-2 fw-bold rounded-3 shadow-sm">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>Değişiklikleri Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

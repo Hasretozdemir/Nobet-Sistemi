@@ -1,0 +1,110 @@
+﻿@model HastaneNobetSistemi.Models.Nobet
+
+@{
+    ViewData["Title"] = "Nöbet Kaydını Sil";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 rounded-4 border-top border-danger border-5">
+
+            <div class="card-body p-4 p-md-5 text-center">
+
+                <div class="text-danger mb-4">
+                    <i class="fa-solid fa-triangle-exclamation fa-4x mb-3 animation-pulse"></i>
+                    <h3 class="fw-bold">Nöbet Kaydını Silmek Üzeresiniz!</h3>
+                    <p class="text-muted">Bu nöbet kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve personelin <strong>toplam adalet puanını</strong> doğrudan etkileyebilir.</p>
+                </div>
+
+                <div class="bg-light rounded-3 p-4 text-start mb-4 shadow-sm border">
+                    <h5 class="fw-bold border-bottom pb-2 mb-3 text-secondary">
+                        <i class="fa-solid fa-file-circle-xmark me-2"></i>Silinecek Nöbet Detayları
+                    </h5>
+
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-sm-5 fw-semibold text-muted">
+                            <i class="fa-solid fa-user-doctor me-2"></i>Personel
+                        </div>
+                        <div class="col-sm-7 fw-bold text-primary fs-5">
+                            @Html.DisplayFor(model => model.Personel.AdSoyad)
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-sm-5 fw-semibold text-muted">
+                            <i class="fa-solid fa-calendar-day me-2"></i>@Html.DisplayNameFor(model => model.Tarih)
+                        </div>
+                        <div class="col-sm-7 fw-bold text-dark">
+                            @Html.DisplayFor(model => model.Tarih)
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-sm-5 fw-semibold text-muted">
+                            <i class="fa-solid fa-star me-2"></i>@Html.DisplayNameFor(model => model.PuanDegeri)
+                        </div>
+                        <div class="col-sm-7">
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fs-6 shadow-sm">
+                                @Html.DisplayFor(model => model.PuanDegeri) Puan
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-sm-5 fw-semibold text-muted">
+                            <i class="fa-solid fa-layer-group me-2"></i>Nöbet Tipi
+                        </div>
+                        <div class="col-sm-7 fw-bold text-dark">
+                            @Html.DisplayFor(model => model.NobetTipi)
+                        </div>
+                    </div>
+                </div>
+
+                <form asp-action="Delete" class="d-flex justify-content-between mt-4">
+                    <input type="hidden" asp-for="Id" />
+
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 fw-semibold rounded-pill transition-hover">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Vazgeç
+                    </a>
+
+                    <button type="submit" class="btn btn-danger px-4 py-2 fw-bold rounded-pill shadow-sm transition-hover">
+                        <i class="fa-solid fa-trash-can me-2"></i>Evet, Nöbeti Sil
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        /* Uyarı ikonunun kalp atışı gibi yanıp sönmesi için */
+        .animation-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Butonların üzerine gelince hafifçe yukarı kalkması */
+        .transition-hover {
+            transition: all 0.2s ease-in-out;
+        }
+
+            .transition-hover:hover {
+                transform: translateY(-2px);
+            }
+    </style>
+}

@@ -1,0 +1,339 @@
+﻿@model IEnumerable<HastaneNobetSistemi.Models.Nobet>
+
+@{
+    ViewData["Title"] = "Nöbet Listesi";
+    var aylar = new[] { "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık" };
+}
+
+<div class="container mt-4 mb-5">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2><i class="fa-solid fa-calendar-days text-primary me-2"></i>Nöbet Listesi</h2>
+            <p class="text-muted small mb-0">İlgili ayın nöbet dağılımını görüntüleyin ve yönetin. Önceki aylara arşivden ulaşabilirsiniz.</p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-warning fw-bold px-3 shadow-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#dagitimModal">
+                <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Adil Nöbet Dağıt
+            </button>
+
+            <a asp-action="Create" class="btn btn-success px-3 shadow-sm rounded-pill">
+                <i class="fa-solid fa-plus me-1"></i> Manuel Ekle
+            </a>
+
+            @if (Model.Any())
+            {
+                <a asp-action="ExportToExcel"
+                   asp-route-ay="@ViewBag.SeciliAy"
+                   asp-route-yil="@ViewBag.SeciliYil"
+                   class="btn btn-outline-success px-3 shadow-sm rounded-pill fw-bold">
+                    <i class="fa-solid fa-file-excel me-2"></i> Excel'e Aktar
+                </a>
+
+                @* ✅ DÜZELTME: YayiniGeriAl -> YayiniGeriCek *@
+                @if (ViewBag.YayindaMi == true)
+                {
+                    <form asp-action="YayiniGeriCek" method="post" class="m-0">
+                        <input type="hidden" name="ay" value="@ViewBag.SeciliAy" />
+                        <input type="hidden" name="yil" value="@ViewBag.SeciliYil" />
+                        <button type="submit" class="btn btn-secondary px-3 shadow-sm rounded-pill fw-bold">
+                            <i class="fa-solid fa-eye-slash me-2"></i> Yayını Geri Al
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    @* ✅ DÜZELTME: NobetleriYayinla -> YayinlaPersonele *@
+                    <form asp-action="YayinlaPersonele" method="post" class="m-0" onsubmit="return confirm('Bu nöbet listesini personellere yayınlamak istediğinizden emin misiniz?');">
+                        <input type="hidden" name="ay" value="@ViewBag.SeciliAy" />
+                        <input type="hidden" name="yil" value="@ViewBag.SeciliYil" />
+                        <button type="submit" class="btn btn-primary px-3 shadow-sm rounded-pill fw-bold">
+                            <i class="fa-solid fa-bullhorn me-2"></i> Personele Yayınla
+                        </button>
+                    </form>
+                }
+            }
+
+            <form asp-action="SistemiTamamenSifirla" method="post" class="m-0 p-0" onsubmit="return confirm('⚠️ DİKKAT!\n\n• TÜM nöbet geçmişi (tüm aylar) silinecek\n• Personellerin nöbet sayaçları SIFIRLANACAK\n• Bu işlem GERİ ALINAMAZ!\n\nDevam etmek istiyor musunuz?');">
+                <button type="submit" class="btn btn-danger px-3 shadow-sm rounded-pill fw-bold">
+                    <i class="fa-solid fa-power-off me-2"></i> Sistemi Sıfırla
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @* Yayın Durumu Göstergesi *@
+    @if (ViewBag.YayindaMi == true)
+    {
+        <div class="alert alert-success border-0 shadow-sm mb-3" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>
+            <strong>Bu nöbet listesi personellere YAYINDA!</strong> Personeller bu listeyi görebilir.
+        </div>
+    }
+    else if (Model.Any())
+    {
+        <div class="alert alert-warning border-0 shadow-sm mb-3" role="alert">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            <strong>Bu liste henüz yayınlanmadı.</strong> Personeller bu listeyi göremez. "Personele Yayınla" butonuna tıklayın.
+        </div>
+    }
+
+    <!-- ARŞİV SİSTEMİ -->
+    <div class="card shadow-sm mb-3 border-0 rounded-4 bg-info bg-opacity-10">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-info fs-5"></i>
+                    <span class="fw-bold text-dark">Nöbet Arşivi:</span>
+                    <span class="badge bg-primary rounded-pill">@aylar[ViewBag.SeciliAy - 1] @ViewBag.SeciliYil</span>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    @{
+                        var bugun = DateTime.Now;
+                        var gecmisAylar = new List<(int ay, int yil, string label)>
+                                        {
+                                        (bugun.Month, bugun.Year, "Bu Ay"),
+                                        (bugun.AddMonths(-1).Month, bugun.AddMonths(-1).Year, "Geçen Ay"),
+                                        (bugun.AddMonths(-2).Month, bugun.AddMonths(-2).Year, aylar[bugun.AddMonths(-2).Month - 1] + " " + bugun.AddMonths(-2).Year),
+                                        (bugun.AddMonths(-3).Month, bugun.AddMonths(-3).Year, aylar[bugun.AddMonths(-3).Month - 1] + " " + bugun.AddMonths(-3).Year)
+                                        };
+                    }
+                    @foreach (var item in gecmisAylar)
+                    {
+                        if (item.ay == ViewBag.SeciliAy && item.yil == ViewBag.SeciliYil)
+                        {
+                            <span class="btn btn-sm btn-primary disabled">@item.label</span>
+                        }
+                        else
+                        {
+                            <a asp-action="Index" asp-route-ay="@item.ay" asp-route-yil="@item.yil" class="btn btn-sm btn-outline-primary">
+                                @item.label
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FİLTRELEME -->
+    <div class="card shadow-sm mb-4 border-0 rounded-4">
+        <div class="card-body bg-light rounded-4">
+            <form asp-action="Index" method="get" class="row gx-3 gy-2 align-items-center">
+                <div class="col-sm-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="fa-regular fa-calendar"></i></span>
+                        <select name="ay" class="form-select border-start-0">
+                            @for (int i = 1; i <= 12; i++)
+                            {
+                                <option value="@i" selected="@(ViewBag.SeciliAy == i)">@aylar[i - 1]</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <select name="yil" class="form-select">
+                        @for (int i = DateTime.Now.Year - 2; i <= DateTime.Now.Year + 2; i++)
+                        {
+                            <option value="@i" selected="@(ViewBag.SeciliYil == i)">@i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter me-1"></i> Filtrele</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NÖBET TABLOSU -->
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">Tarih</th>
+                            <th>Personel Adı</th>
+                            <th>Nöbet Tipi</th>
+                            <th class="text-end pe-4">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-calendar-xmark fs-1 mb-3 text-secondary opacity-50 d-block"></i>
+                                    <strong>@aylar[ViewBag.SeciliAy - 1] @ViewBag.SeciliYil</strong> dönemi için kayıtlı nöbet bulunmuyor.<br>
+                                    <small class="text-info">💡 'Adil Nöbet Dağıt' butonu ile yeni bir plan oluşturabilirsiniz.</small>
+                                </td>
+                            </tr>
+                        }
+                        @foreach (var item in Model)
+                        {
+                            var gecmisTarih = item.Tarih.Date < DateTime.Today;
+                            var bugunku = item.Tarih.Date == DateTime.Today;
+                            <tr class="@(bugunku ? "table-warning" : gecmisTarih ? "table-light text-muted" : "")">
+                                <td class="ps-4 fw-medium">
+                                    @item.Tarih.ToString("dd MMMM yyyy dddd")
+                                    @if (bugunku)
+                                    {
+                                        <span class="badge bg-success rounded-pill ms-2">BUGÜN</span>
+                                    }
+                                    @if (gecmisTarih)
+                                    {
+                                        <i class="fa-solid fa-check-circle text-success ms-2" title="Tamamlandı"></i>
+                                    }
+                                </td>
+                                <td class="fw-bold @(gecmisTarih ? "text-secondary" : "text-dark")">
+                                    <i class="fa-solid fa-user-doctor text-primary opacity-75 me-2"></i>@item.Personel.AdSoyad
+                                </td>
+                                <td>
+                                    @if (item.NobetTipi == "HaftaIci")
+                                    {
+                                        <span class="badge bg-secondary rounded-pill px-3">Hafta İçi</span>
+                                    }
+                                    else if (item.NobetTipi == "HaftaSonu")
+                                    {
+                                        <span class="badge bg-warning text-dark rounded-pill px-3">Hafta Sonu</span>
+                                    }
+                                    else if (item.NobetTipi == "Bayram")
+                                    {
+                                        <span class="badge bg-info text-dark rounded-pill px-3">Bayram</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-dark rounded-pill px-3">@item.NobetTipi</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group shadow-sm">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light border text-primary" title="Düzenle"><i class="fa-solid fa-pen"></i></a>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-light border text-info" title="Detaylar"><i class="fa-solid fa-circle-info"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-light border text-danger" title="Sil"><i class="fa-solid fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- İSTATİSTİKLER -->
+    @if (Model.Any())
+    {
+        var toplamNobet = Model.Count();
+        var haftaIci = Model.Count(n => n.NobetTipi == "HaftaIci");
+        var haftaSonu = Model.Count(n => n.NobetTipi == "HaftaSonu");
+        var bayram = Model.Count(n => n.NobetTipi == "Bayram");
+
+        <div class="row mt-4">
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-primary bg-opacity-10">
+                    <div class="card-body text-center">
+                        <h4 class="text-primary mb-0">@toplamNobet</h4>
+                        <small class="text-muted">Toplam Nöbet</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-secondary bg-opacity-10">
+                    <div class="card-body text-center">
+                        <h4 class="text-secondary mb-0">@haftaIci</h4>
+                        <small class="text-muted">Hafta İçi</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-warning bg-opacity-25">
+                    <div class="card-body text-center">
+                        <h4 class="text-warning mb-0">@haftaSonu</h4>
+                        <small class="text-muted">Hafta Sonu</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-info bg-opacity-25">
+                    <div class="card-body text-center">
+                        <h4 class="text-info mb-0">@bayram</h4>
+                        <small class="text-muted">Bayram</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- DAĞITIM MODALI -->
+<div class="modal fade" id="dagitimModal" tabindex="-1" aria-labelledby="dagitimModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header bg-warning border-0 rounded-top-4">
+                <h5 class="modal-title fw-bold text-dark" id="dagitimModalLabel">
+                    <i class="fa-solid fa-robot me-2"></i>Adil Nöbet Dağıtım Sihirbazı
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="OtomatikDagit" method="post">
+                <div class="modal-body p-4">
+                    <div class="alert alert-info border-0 shadow-sm mb-3">
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        <strong>Akıllı Dağılım Özellikleri:</strong>
+                        <ul class="small mb-0 mt-2 ps-3">
+                            <li>Seçilen ay için <strong>önceki nöbetler silinir</strong> ve yeniden planlanır</li>
+                            <li>Diğer ayların nöbet geçmişi <strong class="text-success">korunur</strong></li>
+                            <li>İzinli günler otomatik atlanır</li>
+                            <li>3 günlük dinlenme kuralı uygulanır</li>
+                            <li>Adil dağılım algoritması devreye girer</li>
+                        </ul>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Ay Seçin</label>
+                            <select name="dagitAy" class="form-select bg-light">
+                                @for (int i = 1; i <= 12; i++)
+                                {
+                                    <option value="@i" selected="@(ViewBag.SeciliAy == i)">@aylar[i - 1]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Yıl Seçin</label>
+                            <select name="dagitYil" class="form-select bg-light">
+                                @for (int i = DateTime.Now.Year; i <= DateTime.Now.Year + 2; i++)
+                                {
+                                    <option value="@i" selected="@(ViewBag.SeciliYil == i)">@i</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-warning fw-bold rounded-pill px-4 shadow-sm">
+                        <i class="fa-solid fa-play me-2"></i> Dağıtımı Başlat
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

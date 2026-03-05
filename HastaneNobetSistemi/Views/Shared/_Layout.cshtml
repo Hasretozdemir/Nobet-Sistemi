@@ -1,0 +1,310 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<HastaneNobetSistemi.Models.AppUser> SignInManager
+@inject UserManager<HastaneNobetSistemi.Models.AppUser> UserManager
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Hastane Nöbet Sistemi</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --sidebar-bg: #0f172a; /* Çok koyu modern lacivert */
+            --accent-color: #3b82f6; /* Parlak mavi */
+            --transition-speed: 0.5s;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* ========== SIDEBAR ANA YAPI ========== */
+        #sidebar-wrapper {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: var(--sidebar-bg);
+            transition: all var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+        }
+
+            /* Kapanmış Sidebar */
+            #sidebar-wrapper.collapsed {
+                width: var(--sidebar-collapsed-width);
+            }
+
+        /* Logo Alanı */
+        .sidebar-brand {
+            padding: 30px 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .brand-icon {
+            font-size: 2.5rem;
+            color: #60a5fa;
+            transition: transform 0.3s;
+        }
+
+        #sidebar-wrapper.collapsed .brand-icon {
+            transform: scale(0.8);
+        }
+
+        .sidebar-text {
+            transition: opacity 0.3s, transform 0.3s;
+            white-space: nowrap;
+        }
+
+        #sidebar-wrapper.collapsed .sidebar-text {
+            opacity: 0;
+            transform: translateX(-20px);
+            pointer-events: none;
+        }
+
+        /* Menü Elemanları */
+        .nav-menu {
+            list-style: none;
+            padding: 15px;
+            margin: 0;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex !important;
+            align-items: center;
+            padding: 14px 0 !important;
+            color: #94a3b8 !important;
+            text-decoration: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+            .nav-link i {
+                min-width: var(--sidebar-collapsed-width); /* Kapanınca tam ortalamak için */
+                font-size: 1.4rem;
+                text-align: center;
+                display: inline-block;
+            }
+
+            /* Hover ve Aktif Durumu */
+            .nav-link:hover, .nav-link.active {
+                background: rgba(255, 255, 255, 0.08);
+                color: #fff !important;
+            }
+
+            .nav-link.active {
+                background: var(--accent-color);
+                box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            }
+
+        /* Toggle Butonu - Diğeri gibi gösterişli */
+        #menu-toggle-btn {
+            position: fixed;
+            left: calc(var(--sidebar-width) - 18px);
+            top: 40px;
+            width: 36px;
+            height: 36px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 4px solid #f8fafc;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        #sidebar-wrapper.collapsed + #menu-toggle-btn {
+            left: calc(var(--sidebar-collapsed-width) - 18px);
+            transform: rotate(180deg);
+        }
+
+        /* Sayfa İçeriği Kayması */
+        #page-content-wrapper {
+            margin-left: var(--sidebar-width);
+            transition: all var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1);
+            padding-bottom: 50px;
+        }
+
+        #sidebar-wrapper.collapsed ~ #page-content-wrapper {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        /* Footer */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+        }
+
+    </style>
+</head>
+<body>
+    <div id="sidebar-wrapper">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-laptop-medical brand-icon"></i>
+            <div class="sidebar-text mt-2 fw-bold text-white fs-5">Nöbet Yönetimi</div>
+        </div>
+
+        <ul class="nav-menu">
+            @if (User.IsInRole("Yetkili"))
+            {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">
+                        <i class="fa-solid fa-grid-2"></i> <span class="sidebar-text">Panel</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Nobets" asp-action="Index">
+                        <i class="fa-solid fa-calendar-check"></i> <span class="sidebar-text">Nöbetler</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Nobets" asp-action="ZorunluListe">
+                        <i class="fa-solid fa-shield-halved"></i> <span class="sidebar-text">Zorunlu Liste</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Personels" asp-action="Index">
+                        <i class="fa-solid fa-user-group"></i> <span class="sidebar-text">Personel</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Izin" asp-action="YonetimPaneli">
+                        <i class="fa-solid fa-file-invoice"></i> <span class="sidebar-text">Talepler</span>
+                    </a>
+                </li>
+            }
+            else if (User.IsInRole("Personel"))
+            {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Personel" asp-action="Dashboard">
+                        <i class="fa-solid fa-house"></i> <span class="sidebar-text">Ana Sayfa</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Personel" asp-action="NobetListesi">
+                        <i class="fa-solid fa-calendar-days"></i> <span class="sidebar-text">Nöbet Listesi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Izin" asp-action="TaleplerimListesi">
+                        <i class="fa-solid fa-umbrella-beach"></i> <span class="sidebar-text">İzinlerim</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="NobetTakas" asp-action="Index">
+                        <i class="fa-solid fa-shuffle"></i> <span class="sidebar-text">Nöbet Takası</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Personel" asp-action="NobetGecmisim">
+                        <i class="fa-solid fa-clock-rotate-left"></i> <span class="sidebar-text">Geçmişim</span>
+                    </a>
+                </li>
+            }
+
+            <li class="nav-item mt-4">
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="nav-link border-0 bg-transparent text-start w-100 text-danger">
+                        <i class="fa-solid fa-power-off"></i> <span class="sidebar-text">Güvenli Çıkış</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer text-center">
+            <div class="sidebar-text">Gazi Hastanesi © 2026</div>
+            <i class="fa-solid fa-hospital d-block mt-1"></i>
+        </div>
+    </div>
+
+    <div id="menu-toggle-btn">
+        <i class="fa-solid fa-chevron-left"></i>
+    </div>
+
+    <div id="page-content-wrapper">
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <nav class="navbar navbar-expand navbar-light bg-white px-4 py-3 shadow-sm mb-4">
+                <div class="container-fluid">
+                    <span class="fw-bold text-dark fs-5">@ViewData["Title"]</span>
+                    <div class="ms-auto d-flex align-items-center">
+                        <div class="dropdown">
+                            <button class="btn btn-light rounded-pill dropdown-toggle px-3 shadow-sm border-0" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-circle-user text-primary me-2"></i> @User.Identity.Name
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 mt-2">
+                                <li><a class="dropdown-item py-2" asp-controller="Personel" asp-action="Dashboard"><i class="fa-solid fa-user-gear me-2"></i>Profil Ayarları</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post">
+                                        <button type="submit" class="dropdown-item text-danger py-2"><i class="fa-solid fa-right-from-bracket me-2"></i>Oturumu Kapat</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        }
+
+        <main role="main" class="container-fluid px-4">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Kayıtlı durumu kontrol et
+            if(localStorage.getItem('sidebarState') === 'collapsed') {
+                $('#sidebar-wrapper').addClass('collapsed');
+            }
+
+            $("#menu-toggle-btn").click(function () {
+                $("#sidebar-wrapper").toggleClass("collapsed");
+                localStorage.setItem('sidebarState', $("#sidebar-wrapper").hasClass("collapsed") ? 'collapsed' : 'expanded');
+            });
+
+            // Aktif menü vurgulama
+            var url = window.location.pathname;
+            $('.nav-link').each(function() {
+                if (this.getAttribute('href') === url) {
+                    $(this).addClass('active');
+                }
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

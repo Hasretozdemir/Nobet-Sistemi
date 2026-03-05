@@ -1,0 +1,436 @@
+﻿@model HastaneNobetSistemi.ViewModels.PersonelKayitViewModel
+
+@{
+    ViewData["Title"] = "Yeni Personel Ekle";
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .create-container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    .create-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+        animation: slideIn 0.5s ease;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .create-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
+        position: relative;
+    }
+
+        .create-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,165.3C384,171,480,149,576,154.7C672,160,768,192,864,197.3C960,203,1056,181,1152,154.7C1248,128,1344,96,1392,80L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') bottom no-repeat;
+            background-size: cover;
+        }
+
+        .create-header i {
+            font-size: 60px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .create-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .create-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+    .create-body {
+        padding: 40px;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #11998e;
+    }
+
+        .section-title i {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+    .form-group-custom {
+        margin-bottom: 25px;
+    }
+
+    .form-label-custom {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 0.95rem;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #11998e;
+        font-size: 1.1rem;
+        z-index: 1;
+    }
+
+    .form-control-custom {
+        width: 100%;
+        padding: 14px 14px 14px 45px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        background: #f8fafc;
+    }
+
+        .form-control-custom:focus {
+            outline: none;
+            border-color: #11998e;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(17, 153, 142, 0.1);
+        }
+
+    .switch-container {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+
+        .switch-container:hover {
+            border-color: #11998e;
+            background: white;
+        }
+
+    .switch-label {
+        font-weight: 600;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .switch-label i {
+            color: #11998e;
+        }
+
+    .custom-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+
+        .custom-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e0;
+        transition: .4s;
+        border-radius: 30px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+    .info-box {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);
+        border-left: 4px solid #3b82f6;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: start;
+        gap: 12px;
+    }
+
+        .info-box i {
+            color: #3b82f6;
+            font-size: 1.3rem;
+            margin-top: 2px;
+        }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+        }
+
+    .btn-cancel {
+        background: #e2e8f0;
+        color: #4a5568;
+        border: none;
+        padding: 16px 40px;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+
+    .help-text {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .help-text i {
+            color: #a0aec0;
+        }
+</style>
+
+<div class="create-container">
+    <div class="create-card">
+        <!-- Başlık -->
+        <div class="create-header">
+            <i class="fa-solid fa-user-plus"></i>
+            <h2>Yeni Personel Ekle</h2>
+            <p>Nöbet rotasyonuna dahil edilecek yeni personeli tanımlayın</p>
+        </div>
+
+        <!-- Form Gövdesi -->
+        <div class="create-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-4 alert alert-danger"></div>
+
+                <!-- Bilgilendirme -->
+                <div class="info-box">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <div>
+                        <strong>Önemli:</strong> Girdiğiniz e-posta ve şifre ile personel sisteme giriş yapabilecektir.
+                        Lütfen güvenli bir şifre belirleyiniz.
+                    </div>
+                </div>
+
+                <!-- Personel Bilgileri -->
+                <div class="section-title">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Personel Adı ve Soyadı</span>
+                </div>
+
+                <div class="form-group-custom">
+                    <label asp-for="AdSoyad" class="form-label-custom"></label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-id-card input-icon"></i>
+                        <input asp-for="AdSoyad" class="form-control-custom" placeholder="Örn: Dr. Ahmet Yılmaz" autofocus />
+                    </div>
+                    <span asp-validation-for="AdSoyad" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group-custom">
+                    <label asp-for="IseGirisTarihi" class="form-label-custom"></label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-calendar-days input-icon"></i>
+                        <input asp-for="IseGirisTarihi" class="form-control-custom" type="date" />
+                    </div>
+                    <span asp-validation-for="IseGirisTarihi" class="text-danger small"></span>
+                </div>
+
+                <!-- Durum Ayarları -->
+                <div class="section-title">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Personel nöbet sisteminde Aktif</span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="switch-container">
+                            <label class="switch-label">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>Aktif Personel</span>
+                            </label>
+                            <label class="custom-switch">
+                                <input asp-for="AktifMi" type="checkbox" checked />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="switch-container">
+                            <label class="switch-label">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>Yedek Personel</span>
+                            </label>
+                            <label class="custom-switch">
+                                <input asp-for="YedekMi" type="checkbox" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-text">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Sıra değerlerini "0" bırakırsanız, yeni personel bir sonraki dağıtımda en öncelikli grupta yer alır.</span>
+                </div>
+
+                <!-- Giriş Bilgileri -->
+                <div class="section-title mt-4">
+                    <i class="fa-solid fa-key"></i>
+                    <span>Sistem Giriş Bilgileri</span>
+                </div>
+
+                <div class="form-group-custom">
+                    <label asp-for="Email" class="form-label-custom"></label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input asp-for="Email" class="form-control-custom" placeholder="personel@hastane.com" type="email" />
+                    </div>
+                    <div class="help-text">
+                        <i class="fa-solid fa-at"></i>
+                        <span>Bu e-posta adresi ile personel sisteme giriş yapacaktır</span>
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group-custom">
+                            <label asp-for="Password" class="form-label-custom"></label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input asp-for="Password" class="form-control-custom" placeholder="En az 6 karakter" type="password" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group-custom">
+                            <label asp-for="ConfirmPassword" class="form-label-custom"></label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input asp-for="ConfirmPassword" class="form-control-custom" placeholder="Şifrenizi tekrar girin" type="password" />
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Butonlar -->
+                <div class="d-flex gap-3 mt-4">
+                    <button type="submit" class="btn-submit flex-fill">
+                        <i class="fa-solid fa-user-check me-2"></i> Personeli Kaydet
+                    </button>
+                    <a asp-action="Index" class="btn-cancel">
+                        <i class="fa-solid fa-xmark me-2"></i> İptal
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,144 @@
+﻿@model HastaneNobetSistemi.Models.Bayram
+
+@{
+    ViewData["Title"] = "Yeni Bayram Ekle";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+                <div class="card-header bg-white border-0 pt-4 pb-0 text-center">
+                    <div class="mini-icon-circle bg-blue-soft text-primary mb-3">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">Yeni Tatil / Bayram Tanımla</h5>
+                    <p class="text-muted small">Sistemin adil puanlama yapabilmesi için tarihleri girin.</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small fw-bold"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="BayramAdi" class="form-label small fw-bold text-secondary">Bayram / Tatil Adı</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-tag text-muted"></i></span>
+                                <input asp-for="BayramAdi" class="form-control bg-light border-start-0 custom-input" placeholder="Örn: Ramazan Bayramı" />
+                            </div>
+                            <span asp-validation-for="BayramAdi" class="text-danger extra-small"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="BaslangicTarihi" class="form-label small fw-bold text-secondary">Başlangıç Tarihi</label>
+                                <input asp-for="BaslangicTarihi" class="form-control custom-input bg-light" type="date" />
+                                <span asp-validation-for="BaslangicTarihi" class="text-danger extra-small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="BitisTarihi" class="form-label small fw-bold text-secondary">Bitiş Tarihi</label>
+                                <input asp-for="BitisTarihi" class="form-control custom-input bg-light" type="date" />
+                                <span asp-validation-for="BitisTarihi" class="text-danger extra-small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted my-4 opacity-25" />
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Index" class="btn btn-link text-decoration-none text-muted small fw-bold">
+                                <i class="fa-solid fa-arrow-left me-1"></i> Listeye Dön
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm btn-save">
+                                <i class="fa-solid fa-check me-1"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
+
+        /* Yumuşak Renkler ve İkon Kutusu */
+        .bg-blue-soft {
+            background-color: #eff6ff;
+        }
+
+        .mini-icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin: 0 auto;
+        }
+
+        /* Input Modernizasyonu: Kaba durmayan şık kutular */
+        .custom-input {
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            padding: 10px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+            .custom-input:focus {
+                background-color: #fff !important;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+        /* Input Group Uyumu */
+        .input-group-text {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px 0 0 8px;
+        }
+
+        /* Buton Şıklığı */
+        .btn-save {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            transition: transform 0.2s;
+        }
+
+            .btn-save:hover {
+                transform: translateY(-2px);
+                background-color: #1d4ed8;
+            }
+
+        .extra-small {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .card-body {
+                padding: 25px !important;
+            }
+
+            .btn-save {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .d-flex {
+                flex-direction: column-reverse;
+            }
+        }
+    </style>
+}

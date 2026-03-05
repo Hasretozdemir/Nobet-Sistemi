@@ -1,0 +1,123 @@
+﻿@model HastaneNobetSistemi.Models.Personel
+
+@{
+    ViewData["Title"] = "Personel Kaydını Sil";
+}
+
+<div class="row justify-content-center mt-5 mb-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 rounded-4 border-top border-danger border-5">
+
+            <div class="card-body p-4 p-md-5 text-center">
+
+                @* --- Uyarı İkonu ve Başlık --- *@
+                <div class="text-danger mb-4">
+                    <i class="fa-solid fa-user-xmark fa-4x mb-3 animation-pulse"></i>
+                    <h3 class="fw-bold">Personel Kaydını Silmek Üzeresiniz!</h3>
+                    <p class="text-muted small">
+                        Bu personeli sistemden kalıcı olarak silmek istediğinize emin misiniz?<br>
+                        <strong class="text-danger">Dikkat:</strong> Bu işlem personelin tüm nöbet geçmişini temizler ve adalet sırasını bozar.
+                    </p>
+                </div>
+
+                @* --- Personel Özet Bilgileri --- *@
+                <div class="bg-light rounded-3 p-4 text-start mb-4 shadow-sm border">
+                    <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.75rem;">
+                        <i class="fa-solid fa-id-card-clip me-2"></i>Silinecek Personel Bilgileri
+                    </h6>
+
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-sm-5 fw-semibold text-muted small">AD SOYAD:</div>
+                        <div class="col-sm-7 fw-bold text-dark">@Model.AdSoyad</div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-sm-5 fw-semibold text-muted small">H.İÇİ SIRA:</div>
+                        <div class="col-sm-7"><span class="badge bg-secondary">@Model.HaftaIciSira</span></div>
+                    </div>
+
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-sm-5 fw-semibold text-muted small">H.SONU SIRA:</div>
+                        <div class="col-sm-7"><span class="badge bg-warning text-dark">@Model.HaftaSonuSira</span></div>
+                    </div>
+
+                    <div class="row mb-0 align-items-center">
+                        <div class="col-sm-5 fw-semibold text-muted small">DURUM:</div>
+                        <div class="col-sm-7">
+                            @if (Model.AktifMi == true || Model.AktifMi == null)
+                            {
+                                <span class="text-success fw-bold small"><i class="fa-solid fa-check me-1"></i>AKTİF</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold small"><i class="fa-solid fa-xmark me-1"></i>PASİF</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @* --- Onay Formu --- *@
+                <form asp-action="Delete" class="d-flex justify-content-between mt-4">
+                    <input type="hidden" asp-for="Id" />
+
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 fw-semibold rounded-pill transition-hover">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Vazgeç
+                    </a>
+
+                    <button type="submit" class="btn btn-danger px-4 py-2 fw-bold rounded-pill shadow-sm transition-hover">
+                        <i class="fa-solid fa-trash-can me-2"></i>Evet, Kalıcı Olarak Sil
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+        @* Bilgilendirme Notu *@
+        <div class="text-center mt-3">
+            <p class="text-muted extra-small"><i class="fa-solid fa-circle-info me-1"></i> Personeli silmek yerine <strong>Düzenle</strong> ekranından <strong>Pasif</strong> duruma getirmeyi düşünebilirsiniz.</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
+
+        /* Uyarı ikonunun kalp atışı gibi yanıp sönmesi */
+        .animation-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .transition-hover {
+            transition: all 0.2s ease-in-out;
+        }
+
+            .transition-hover:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2) !important;
+            }
+
+        .extra-small {
+            font-size: 0.7rem;
+        }
+    </style>
+}

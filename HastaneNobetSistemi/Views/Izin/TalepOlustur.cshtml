@@ -1,0 +1,228 @@
+@model HastaneNobetSistemi.Models.IzinTalebi
+
+@{
+    ViewData["Title"] = "Yeni Ýzin Talebi";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        background-color: #f4f7fe;
+        font-family: 'Inter', sans-serif;
+    }
+
+    h4 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Form Kartý Tasarýmý */
+    .form-container {
+        max-width: 850px;
+        margin: 50px auto;
+    }
+
+    .main-card {
+        border: none;
+        border-radius: 30px;
+        background: #ffffff;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+        padding: 40px;
+        color: white;
+        text-align: center;
+    }
+
+    /* Input Tasarýmlarý */
+    .form-group-custom {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #4a5568;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control-custom {
+        border: 2px solid #edf2f7;
+        border-radius: 15px;
+        padding: 15px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background-color: #f8fafc;
+    }
+
+        .form-control-custom:focus {
+            border-color: #4361ee;
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+            outline: none;
+        }
+
+    /* Bilgi Kutusu */
+    .info-panel {
+        background: #eef2ff;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 35px;
+        border: 1px dashed #4361ee;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+        color: #3730a3;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    /* Butonlar */
+    .btn-submit {
+        background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(67, 97, 238, 0.3);
+            color: white;
+        }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #64748b;
+        border: none;
+        padding: 16px 30px;
+        border-radius: 16px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+    /* Ýkonlar */
+    .input-icon {
+        position: relative;
+    }
+
+        .input-icon i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+</style>
+
+<div class="container form-container">
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4 p-3 d-flex align-items-center animate__animated animate__shakeX">
+            <i class="fa-solid fa-circle-exclamation fs-4 me-3"></i>
+            <div><strong>Hata!</strong> @TempData["ErrorMessage"]</div>
+        </div>
+    }
+
+    <div class="main-card shadow-lg">
+        <div class="card-header-custom">
+            <div class="bg-white bg-opacity-20 d-inline-block p-3 rounded-circle mb-3">
+                <i class="fa-solid fa-calendar-plus fs-3"></i>
+            </div>
+            <h4 class="mb-1">Yeni Ýzin Talebi Oluþtur</h4>
+            <p class="mb-0 opacity-75 small">Lütfen izin almak istediðiniz tarih aralýðýný belirleyin.</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+
+            <div class="info-panel">
+                <h6 class="fw-bold mb-3 d-flex align-items-center">
+                    <i class="fa-solid fa-lightbulb text-warning me-2"></i> Unutmayýn:
+                </h6>
+                <div class="info-item">
+                    <i class="fa-solid fa-circle-check small"></i>
+                    <span>Talebiniz yönetici onayýndan sonra kesinleþir.</span>
+                </div>
+                <div class="info-item">
+                    <i class="fa-solid fa-circle-check small"></i>
+                    <span>Onaylý izin süresince nöbet listesine dahil edilmezsiniz.</span>
+                </div>
+            </div>
+
+            <form asp-action="TalepOlustur" method="post">
+                <div class="row">
+                    <div class="col-md-6 form-group-custom">
+                        <label asp-for="BaslangicTarihi" class="form-label">Ýzin Baþlangýç Tarihi</label>
+                        <div class="input-icon">
+                            <input asp-for="BaslangicTarihi" type="date" class="form-control form-control-custom"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            <i class="fa-solid fa-calendar-day"></i>
+                        </div>
+                        <span asp-validation-for="BaslangicTarihi" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="col-md-6 form-group-custom">
+                        <label asp-for="BitisTarihi" class="form-label">Ýzin Bitiþ Tarihi</label>
+                        <div class="input-icon">
+                            <input asp-for="BitisTarihi" type="date" class="form-control form-control-custom"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <span asp-validation-for="BitisTarihi" class="text-danger small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="col-12 form-group-custom">
+                        <label asp-for="Aciklama" class="form-label">Talep Gerekçesi / Açýklama</label>
+                        <textarea asp-for="Aciklama" class="form-control form-control-custom" rows="4"
+                                  placeholder="Yöneticinize iletmek istediðiniz notu buraya yazabilirsiniz..."></textarea>
+                        <span asp-validation-for="Aciklama" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-end mt-4 border-top pt-4">
+                    <a asp-action="TaleplerimListesi" class="btn btn-cancel">
+                        <i class="fa-solid fa-chevron-left me-2"></i>Vazgeç
+                    </a>
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fa-solid fa-paper-plane me-2"></i>Talebi Onaya Gönder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Opsiyonel: Baþlangýç tarihi deðiþtiðinde bitiþ tarihinin min deðerini güncelle
+        document.getElementById("BaslangicTarihi").addEventListener("change", function() {
+            var startDate = this.value;
+            document.getElementById("BitisTarihi").setAttribute("min", startDate);
+        });
+    </script>
+}

@@ -1,0 +1,312 @@
+﻿@{
+    ViewData["Title"] = "Nöbet Listem";
+    var personel = ViewBag.Personel as HastaneNobetSistemi.Models.Personel;
+    var yayinlar = ViewBag.Yayinlar as List<HastaneNobetSistemi.Models.NobetYayini>;
+    var nobetlerim = ViewBag.Nobetlerim as List<HastaneNobetSistemi.Models.Nobet>;
+    var yayindaMi = ViewBag.YayindaMi as bool? ?? false;
+    var seciliAy = ViewBag.SeciliAy as int? ?? DateTime.Now.Month;
+    var seciliYil = ViewBag.SeciliYil as int? ?? DateTime.Now.Year;
+    var aylar = new[] { "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık" };
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Inter', sans-serif;
+    }
+
+    h3, h5, .month-name {
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Header & Gradient Background */
+    .dashboard-header {
+        background: linear-gradient(135deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
+        border-radius: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 40px;
+        color: white;
+        margin-bottom: -60px; /* Overlap effect */
+    }
+
+    /* Period Picker Navigation */
+    .period-nav {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        padding: 15px;
+        margin-bottom: 2rem;
+    }
+
+    .period-link {
+        padding: 10px 20px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #4a5568;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+
+        .period-link:hover {
+            background: #f8fafc;
+            color: #4361ee;
+        }
+
+        .period-link.active {
+            background: #eef2ff;
+            color: #4361ee;
+            border-color: #4361ee;
+        }
+
+    /* Duty Cards & Rows */
+    .duty-card {
+        background: white;
+        border-radius: 25px;
+        border: none;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background: #f8fafc;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        color: #718096;
+        padding: 1.5rem 1rem;
+        border: none;
+    }
+
+    .duty-row-today {
+        background-color: #fff9db !important;
+        border-left: 6px solid #fcc419;
+    }
+
+    .date-badge {
+        width: 50px;
+        height: 50px;
+        background: #f1f5f9;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+
+    /* Status Pills */
+    .badge-soft {
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .bg-soft-info {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .bg-soft-warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .bg-soft-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Stats Section */
+    .stat-mini-card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        border-bottom: 5px solid transparent;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="dashboard-header text-center text-md-start">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-white bg-opacity-25 mb-2 px-3">Hoş Geldiniz, Sayın</span>
+                <h1 class="display-6 fw-bold mb-2">@personel.AdSoyad</h1>
+                <p class="mb-0 opacity-75"><i class="fa-solid fa-hospital-user me-2"></i>@personel.Birim - @aylar[seciliAy - 1] @seciliYil Nöbet Durumu</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                <div class="d-inline-block bg-white bg-opacity-20 p-3 rounded-4 backdrop-blur">
+                    <h5 class="mb-0 fw-bold">@(nobetlerim?.Count ?? 0) Nöbet</h5>
+                    <small class="opacity-75">Bu Ay Toplam</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="position-relative" style="z-index: 2;">
+
+        <div class="period-nav d-flex justify-content-center flex-wrap gap-2 shadow-sm">
+            @if (yayinlar != null)
+            {
+                @foreach (var yayin in yayinlar.OrderByDescending(y => y.Yil).ThenByDescending(y => y.Ay).Take(5))
+                {
+                    var aktif = yayin.Ay == seciliAy && yayin.Yil == seciliYil;
+                    <a href="@Url.Action("NobetListesi", new { ay = yayin.Ay, yil = yayin.Yil })"
+                       class="period-link @(aktif ? "active" : "")">
+                        @aylar[yayin.Ay - 1] @yayin.Yil
+                    </a>
+                }
+            }
+        </div>
+
+        <div class="duty-card shadow-lg mb-5">
+            <div class="card-body p-0">
+                @if (!yayindaMi)
+                {
+                    <div class="text-center py-5">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3593/3593504.png" width="120" class="mb-4 opacity-50">
+                        <h4 class="text-muted fw-bold">Dönem Henüz Yayınlanmadı</h4>
+                        <p class="text-secondary px-5">@aylar[seciliAy - 1] ayı nöbet listesi henüz yönetim tarafından onaylanıp paylaşıma açılmamıştır.</p>
+                    </div>
+                }
+                else if (nobetlerim == null || !nobetlerim.Any())
+                {
+                    <div class="text-center py-5">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4334/4334057.png" width="120" class="mb-4">
+                        <h4 class="text-success fw-bold">Bu Ay Nöbetiniz Yok!</h4>
+                        <p class="text-secondary">Harika! @aylar[seciliAy - 1] döneminde size atanmış herhangi bir nöbet bulunmuyor.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">TARİH</th>
+                                    <th>NÖBET TİPİ</th>
+                                    <th>DURUM</th>
+                                    <th class="text-end pe-4">AKSİYON</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var nobet in nobetlerim.OrderBy(n => n.Tarih))
+                                {
+                                    var gecmis = nobet.Tarih.Date < DateTime.Today;
+                                    var bugun = nobet.Tarih.Date == DateTime.Today;
+                                    var gelecek = nobet.Tarih.Date > DateTime.Today;
+
+                                    <tr class="@(bugun ? "duty-row-today" : "")">
+                                        <td class="ps-4 py-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="date-badge me-3 @(bugun ? "bg-warning text-dark" : "")">
+                                                    <span class="small fw-bold">@nobet.Tarih.ToString("MMM").ToUpper()</span>
+                                                    <span class="fs-5 fw-bold">@nobet.Tarih.Day</span>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold text-dark">@nobet.Tarih.ToString("dddd")</div>
+                                                    <small class="text-muted">@nobet.Tarih.ToString("dd.MM.yyyy")</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (nobet.NobetTipi == "HaftaIci")
+                                            {
+                                                <span class="badge-soft bg-soft-info">Hafta İçi</span>
+                                            }
+                                            else if (nobet.NobetTipi == "HaftaSonu")
+                                            {
+
+                                                <span class="badge-soft bg-soft-warning">Hafta Sonu</span>
+                                            }
+                                            else
+                                            {
+
+                                                <span class="badge-soft bg-soft-danger">Resmi Tatil</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (bugun)
+                                            {
+                                                <span class="badge rounded-pill bg-danger shadow-sm"><i class="fa-solid fa-bullhorn me-1 pulse"></i> NÖBET GÜNÜ</span>
+                                            }
+                                            else if (gecmis)
+                                            {
+
+                                                <span class="text-success small fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Tamamlandı</span>
+                                            }
+                                            else
+                                            {
+
+                                                <span class="text-muted small">@((nobet.Tarih - DateTime.Today).Days) gün kaldı</span>
+                                            }
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            @if (gelecek)
+                                            {
+                                                <a asp-controller="NobetTakas" asp-action="Create" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm">
+                                                    <i class="fa-solid fa-arrows-rotate me-1"></i>Takas Talebi
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (nobetlerim != null && nobetlerim.Any())
+        {
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="stat-mini-card shadow-sm border-primary">
+                        <h6 class="text-muted mb-2">Hafta İçi</h6>
+                        <h2 class="fw-bold text-primary mb-0">@nobetlerim.Count(n => n.NobetTipi == "HaftaIci")</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-mini-card shadow-sm border-warning">
+                        <h6 class="text-muted mb-2">Hafta Sonu</h6>
+                        <h2 class="fw-bold text-warning mb-0">@nobetlerim.Count(n => n.NobetTipi == "HaftaSonu")</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-mini-card shadow-sm border-danger">
+                        <h6 class="text-muted mb-2">Resmi Tatil</h6>
+                        <h2 class="fw-bold text-danger mb-0">@nobetlerim.Count(n => n.NobetTipi == "Bayram")</h2>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .pulse {
+        animation: pulse-animation 2s infinite;
+    }
+
+    @@keyframes pulse-animation {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .backdrop-blur {
+        backdrop-filter: blur(5px);
+    }
+</style>

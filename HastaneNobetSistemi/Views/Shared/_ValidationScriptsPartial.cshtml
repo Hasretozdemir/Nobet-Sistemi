@@ -1,0 +1,87 @@
+﻿@* --- jQuery Validation Kütüphaneleri --- *@
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Doğrulama ayarlarını modern dashboard yapısına göre özelleştiriyoruz
+        var defaultOptions = {
+            errorClass: 'text-danger fw-bold error-shake',
+            errorElement: 'span',
+
+            // Alan hatalı olduğunda tetiklenir (Kırmızı renk ve gölge)
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid border-danger shadow-sm').removeClass('is-valid border-success');
+                // Varsa ikonun rengini de kırmızı yap
+                $(element).siblings('label').find('i').removeClass('text-primary text-muted text-success text-info text-warning').addClass('text-danger');
+            },
+
+            // Alan düzeldiğinde tetiklenir (Yeşil onay rengi)
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid border-danger shadow-sm').addClass('is-valid border-success');
+                // İkonu yeşil yaparak kullanıcıya güven ver
+                $(element).siblings('label').find('i').removeClass('text-danger text-primary text-muted text-info text-warning').addClass('text-success');
+            }
+        };
+
+        // Varsayılan ayarları sisteme kaydet
+        $.validator.setDefaults(defaultOptions);
+
+        // Sayfadaki mevcut formları bu yeni görsel kurallara göre güncelle
+        $("form").each(function () {
+            var validator = $(this).data('validator');
+            if (validator) {
+                validator.settings.highlight = defaultOptions.highlight;
+                validator.settings.unhighlight = defaultOptions.unhighlight;
+            }
+        });
+    });
+</script>
+
+<style>
+    /* --- Hata mesajı titreme animasyonu --- */
+    .error-shake {
+        animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        display: inline-block;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    /* KRİTİK: Razor hatasını (CS0103) önlemek için @@ sembolü kullanıldı */
+    @@keyframes shake {
+        10%, 90% {
+            transform: translate3d(-1px, 0, 0);
+        }
+
+        20%, 80% {
+            transform: translate3d(2px, 0, 0);
+        }
+
+        30%, 50%, 70% {
+            transform: translate3d(-4px, 0, 0);
+        }
+
+        40%, 60% {
+            transform: translate3d(4px, 0, 0);
+        }
+    }
+
+    /* --- Form Kutularının Renk Geçişleri --- */
+    /* Hatalı durum: Hafif kırmızımsı arka plan */
+    .form-control.is-invalid, .form-select.is-invalid {
+        background-color: #fffafb !important;
+        transition: all 0.3s ease;
+    }
+
+    /* Geçerli durum: Hafif yeşilimsi arka plan */
+    .form-control.is-valid, .form-select.is-valid {
+        background-color: #f6fdf9 !important;
+        transition: all 0.3s ease;
+    }
+
+    /* Mesajların daha profesyonel görünmesi için */
+    .text-danger.fw-bold {
+        font-weight: 600 !important;
+        letter-spacing: -0.2px;
+    }
+</style>

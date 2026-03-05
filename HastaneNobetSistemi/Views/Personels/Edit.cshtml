@@ -1,0 +1,250 @@
+﻿@model HastaneNobetSistemi.Models.Personel
+@using Microsoft.EntityFrameworkCore
+@inject HastaneNobetSistemi.Data.AppDbContext Context
+
+@{
+    ViewData["Title"] = "Personel Düzenle";
+    var user = await Context.Users.FirstOrDefaultAsync(u => u.PersonelId == Model.Id);
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+
+                <div class="card-header bg-dark py-4 px-4 position-relative border-0">
+                    <div class="d-flex align-items-center justify-content-between position-relative" style="z-index: 2;">
+                        <div>
+                            <h3 class="text-white mb-0 fw-bold">
+                                <i class="fa-solid fa-user-gear me-2 text-warning"></i>Personel Profilini Yönet
+                            </h3>
+                            <p class="text-white-50 small mb-0 mt-1">Sistem erişim bilgilerini ve nöbet önceliklerini güncelleyin.</p>
+                        </div>
+                        <div class="text-white-50 d-none d-sm-block">
+                            <i class="fa-solid fa-id-card-clip fa-3x opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-light">
+                    @if (user != null)
+                    {
+                        <div class="alert alert-info d-flex align-items-start mb-4 shadow-sm">
+                            <i class="fa-solid fa-circle-info me-3 fs-4 mt-1"></i>
+                            <div>
+                                <strong>Sistem Giriş Bilgileri:</strong><br />
+                                <span class="text-muted">
+                                    E-posta: <strong class="text-dark">@user.Email</strong>
+                                </span>
+                            </div>
+                        </div>
+                    }
+
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 rounded-3 shadow-sm mb-4"></div>
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="IseGirisTarihi" />
+                        <input type="hidden" asp-for="BuAyHaftaIci" />
+                        <input type="hidden" asp-for="BuAyHaftaSonu" />
+                        <input type="hidden" asp-for="BuAyBayram" />
+                        <input type="hidden" asp-for="ToplamHaftaIci" />
+                        <input type="hidden" asp-for="ToplamHaftaSonu" />
+                        <input type="hidden" asp-for="ToplamBayram" />
+                        <input type="hidden" asp-for="IzinBaslangic" />
+                        <input type="hidden" asp-for="IzinBitis" />
+                        <input type="hidden" asp-for="YedekMi" />
+                        @if (Model.SonNobetTarihi.HasValue)
+                        {
+                            <input type="hidden" asp-for="SonNobetTarihi" />
+                        }
+
+                        <div class="section-title mb-4">
+                            <span class="badge bg-primary px-3 py-2 rounded-pill">1. Kişisel Bilgiler</span>
+                            <hr class="text-muted opacity-25">
+                        </div>
+
+                        <div class="row g-4 mb-5">
+                            <div class="col-md-6">
+                                <div class="form-floating shadow-sm rounded-3">
+                                    <input asp-for="SicilNo" class="form-control border-0 px-4" placeholder="Sicil No" required />
+                                    <label asp-for="SicilNo" class="text-muted"><i class="fa-solid fa-id-badge me-2 text-primary"></i>Sicil No</label>
+                                    <span asp-validation-for="SicilNo" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating shadow-sm rounded-3">
+                                    <input asp-for="Birim" class="form-control border-0 px-4" placeholder="Birim" />
+                                    <label asp-for="Birim" class="text-muted"><i class="fa-solid fa-building me-2 text-primary"></i>Birim</label>
+                                    <span asp-validation-for="Birim" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-floating shadow-sm rounded-3">
+                                    <input asp-for="AdSoyad" class="form-control border-0 px-4" placeholder="Ad Soyad" required />
+                                    <label asp-for="AdSoyad" class="text-muted"><i class="fa-solid fa-user me-2 text-primary"></i>Ad Soyad</label>
+                                    <span asp-validation-for="AdSoyad" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email ve Şifre Güncelleme -->
+                        <div class="section-title mb-4">
+                            <span class="badge bg-info px-3 py-2 rounded-pill">2. Sistem Giriş Bilgilerini Güncelle (İsteğe Bağlı)</span>
+                            <hr class="text-muted opacity-25">
+                        </div>
+
+                        <div class="row g-4 mb-5">
+                            <div class="col-md-12">
+                                <div class="form-floating shadow-sm rounded-3">
+                                    <input type="email" name="Email" class="form-control border-0 px-4" placeholder="E-posta" value="@(user?.Email ?? "")" />
+                                    <label class="text-muted"><i class="fa-solid fa-envelope me-2 text-primary"></i>E-posta</label>
+                                    <small class="text-muted d-block mt-2">Değiştirmek istemiyorsanız mevcut e-postayı bırakın</small>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating shadow-sm rounded-3">
+                                    <input type="password" name="Sifre" class="form-control border-0 px-4 pe-5" placeholder="Yeni Şifre" />
+                                    <label class="text-muted"><i class="fa-solid fa-lock me-2 text-primary"></i>Yeni Şifre</label>
+                                    <small class="text-muted d-block mt-2">Şifreyi değiştirmek istemiyorsanız boş bırakın (en az 6 karakter)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-title mb-4">
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">3. Nöbet Planlama Ayarları</span>
+                            <hr class="text-muted opacity-25">
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="card border-0 shadow-sm p-3 text-center bg-white h-100">
+                                    <label class="text-muted small fw-bold mb-2">H.İÇİ SIRA</label>
+                                    <input asp-for="HaftaIciSira" class="form-control form-control-lg text-center border-0 bg-light rounded-3 fw-bold" type="number" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-0 shadow-sm p-3 text-center bg-white h-100">
+                                    <label class="text-muted small fw-bold mb-2">H.SONU SIRA</label>
+                                    <input asp-for="HaftaSonuSira" class="form-control form-control-lg text-center border-0 bg-light rounded-3 fw-bold" type="number" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-0 shadow-sm p-3 text-center bg-white h-100">
+                                    <label class="text-muted small fw-bold mb-2">BAYRAM SIRA</label>
+                                    <input asp-for="BayramSira" class="form-control form-control-lg text-center border-0 bg-light rounded-3 fw-bold" type="number" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-5">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center p-3 bg-white shadow-sm rounded-4 border-start border-4 border-success">
+                                    <div class="form-check form-switch m-0 p-0 ps-5">
+                                        <input class="form-check-input fs-4" type="checkbox" name="AktifMi" id="aktifMiSwitch" value="true" @(Model.AktifMi == true ? "checked" : "") role="switch">
+                                        <input type="hidden" name="AktifMi" value="false">
+                                    </div>
+                                    <div class="ms-3">
+                                        <label class="fw-bold text-dark d-block mb-0" for="aktifMiSwitch">Sistemde Aktif</label>
+                                        <small class="text-muted">Nöbet listesine dahil edilir.</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center p-3 bg-white shadow-sm rounded-4 border-start border-4 border-danger">
+                                    <div class="form-check form-switch m-0 p-0 ps-5">
+                                        <input class="form-check-input fs-4" type="checkbox" name="ZorunluNobetciMi" id="yedekSwitch" value="true" @(Model.ZorunluNobetciMi ? "checked" : "") role="switch">
+                                        <input type="hidden" name="ZorunluNobetciMi" value="false">
+                                    </div>
+                                    <div class="ms-3">
+                                        <label class="fw-bold text-dark d-block mb-0" for="yedekSwitch">Zorunlu Nöbetçi</label>
+                                        <small class="text-muted">İzinlilerin yerine ilk o atanır.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 bg-white shadow-sm mb-5 rounded-4 overflow-hidden">
+                            <div class="row g-0 text-center">
+                                <div class="col-4 p-3 border-end">
+                                    <div class="text-muted small">Bu Ay Toplam</div>
+                                    <div class="fw-bold text-primary fs-5">@(Model.BuAyHaftaIci + Model.BuAyHaftaSonu + Model.BuAyBayram)</div>
+                                </div>
+                                <div class="col-4 p-3 border-end">
+                                    <div class="text-muted small">Genel Toplam</div>
+                                    <div class="fw-bold text-dark fs-5">@(Model.ToplamHaftaIci + Model.ToplamHaftaSonu + Model.ToplamBayram)</div>
+                                </div>
+                                <div class="col-4 p-3">
+                                    <div class="text-muted small">Son Nöbet</div>
+                                    <div class="fw-bold text-muted fs-6">@(Model.SonNobetTarihi?.ToString("dd.MM.yy") ?? "-")</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4 order-2 order-md-1">
+                                <a asp-action="Index" class="btn btn-outline-dark w-100 py-3 rounded-pill fw-bold transition-all">
+                                    <i class="fa-solid fa-xmark me-2"></i>Vazgeç
+                                </a>
+                            </div>
+                            <div class="col-md-8 order-1 order-md-2">
+                                <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow transition-all">
+                                    <i class="fa-solid fa-check-double me-2"></i>Değişiklikleri Uygula ve Kaydet
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <style>
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+
+            .transition-all:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+            }
+
+        .form-control:focus {
+            box-shadow: none;
+            background-color: #fff;
+            border: 1px solid #0d6efd !important;
+        }
+
+        .form-floating > .form-control {
+            border-bottom: 2px solid transparent;
+        }
+
+            .form-floating > .form-control:focus {
+                border-bottom: 2px solid #0d6efd;
+            }
+
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        #yedekSwitch:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+    </style>
+}

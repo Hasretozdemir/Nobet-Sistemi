@@ -1,0 +1,358 @@
+﻿@model IEnumerable<HastaneNobetSistemi.Models.IzinTalebi>
+
+@{
+    ViewData["Title"] = "İzin Talepleri Yönetimi";
+    var seciliDurum = ViewBag.SeciliDurum as string;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        --bg-color: #f8fafc;
+    }
+
+    body {
+        background-color: var(--bg-color);
+        font-family: 'Inter', sans-serif;
+    }
+
+    h2, h5 {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .header-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .stat-filter-card {
+        border: 2px solid transparent;
+        border-radius: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        text-decoration: none !important;
+        display: block;
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .stat-filter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.06);
+        }
+
+        .stat-filter-card.active {
+            border-color: currentColor;
+            background-color: rgba(255, 255, 255, 1);
+        }
+
+            .stat-filter-card.active::after {
+                content: '\f058';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                font-size: 1.2rem;
+            }
+
+    .admin-table-card {
+        background: white;
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 1.2rem 1rem;
+        border: none;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s;
+    }
+
+        .table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+    .action-btn-group .btn {
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        margin-left: 5px;
+        transition: all 0.2s;
+    }
+
+    .person-avatar {
+        width: 40px;
+        height: 40px;
+        background: #e2e8f0;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-weight: 700;
+        margin-right: 12px;
+    }
+
+    /* Modal Stileri */
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding: 2rem 2rem 1rem;
+    }
+
+    .modal-body {
+        padding: 1rem 2rem 2rem;
+    }
+
+    .modal-footer {
+        border-top: none;
+        padding: 1rem 2rem 2rem;
+    }
+</style>
+
+<div class="container py-5">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4 p-3" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="header-section d-flex justify-content-between align-items-center flex-wrap gap-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">İzin Yönetim Merkezi</h2>
+            <p class="text-muted mb-0"><i class="fa-solid fa-shield-halved me-2"></i>Hastane idari personeli onay bekleyen talepleri buradan yönetir.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="IzinTakvimi" class="btn btn-dark rounded-pill px-4 shadow-sm">
+                <i class="fa-solid fa-calendar-alt me-2"></i>Genel Takvim
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <a asp-action="YonetimPaneli" asp-route-durum="Beklemede"
+               class="stat-filter-card p-4 shadow-sm text-warning @(seciliDurum == "Beklemede" ? "active" : "")">
+                <div class="d-flex align-items-center">
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-4 me-3">
+                        <i class="fa-solid fa-clock-rotate-left fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0">@ViewBag.BekleyenSayisi</h3>
+                        <span class="text-muted fw-medium">Bekleyen Talepler</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-action="YonetimPaneli" asp-route-durum="Onaylandi"
+               class="stat-filter-card p-4 shadow-sm text-success @(seciliDurum == "Onaylandi" ? "active" : "")">
+                <div class="d-flex align-items-center">
+                    <div class="bg-success bg-opacity-10 p-3 rounded-4 me-3">
+                        <i class="fa-solid fa-circle-check fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0">@ViewBag.OnaylananSayisi</h3>
+                        <span class="text-muted fw-medium">Onaylanan İzinler</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-action="YonetimPaneli" asp-route-durum="Reddedildi"
+               class="stat-filter-card p-4 shadow-sm text-danger @(seciliDurum == "Reddedildi" ? "active" : "")">
+                <div class="d-flex align-items-center">
+                    <div class="bg-danger bg-opacity-10 p-3 rounded-4 me-3">
+                        <i class="fa-solid fa-circle-xmark fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0">@ViewBag.RedSayisi</h3>
+                        <span class="text-muted fw-medium">Reddedilen Talepler</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-table-card shadow-sm border">
+        <div class="p-4 bg-white border-bottom">
+            <h5 class="mb-0 fw-bold"><i class="fa-solid fa-list-check me-2 text-primary"></i> @seciliDurum Listesi</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">PERSONEL BİLGİSİ</th>
+                        <th>TALEP TARİHİ</th>
+                        <th>İZİN TARİH ARALIĞI</th>
+                        <th>SÜRE</th>
+                        <th class="text-end pe-4">İŞLEMLER</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="fa-solid fa-folder-open fs-1 text-muted opacity-25 d-block mb-3"></i>
+                                <span class="text-muted fw-medium">Bu kategoride şu an herhangi bir talep bulunmamaktadır.</span>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var talep in Model)
+                    {
+                        var gunSayisi = (talep.BitisTarihi.Date - talep.BaslangicTarihi.Date).Days + 1;
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="person-avatar">
+                                        @(talep.Personel?.AdSoyad?.Substring(0, 1).ToUpper() ?? "?")
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">@talep.Personel?.AdSoyad</div>
+                                        <small class="text-muted">@talep.Personel?.Birim</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-muted">@talep.TalepTarihi.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <div class="fw-bold text-primary">
+                                    @talep.BaslangicTarihi.ToString("dd.MM.yy") <i class="fa-solid fa-arrow-right mx-1 small opacity-50"></i> @talep.BitisTarihi.ToString("dd.MM.yy")
+                                </div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border px-3 py-2">@gunSayisi Gün</span></td>
+                            <td class="text-end pe-4">
+                                <div class="action-btn-group">
+                                    <a asp-action="TalepDetay" asp-route-id="@talep.Id" class="btn btn-outline-primary" title="Detaylı İncele">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    @if (talep.Durum == "Beklemede")
+                                    {
+                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#onayModal@(talep.Id)" title="Hızlı Onayla">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#redModal@(talep.Id)" title="Reddet">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* ✅ ONAY VE RED MODALLARI *@
+@foreach (var talep in Model.Where(t => t.Durum == "Beklemede"))
+{
+    <!-- ONAY MODAL -->
+    <div class="modal fade" id="onayModal@(talep.Id)" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header bg-success bg-opacity-10">
+                    <h5 class="modal-title text-success fw-bold">
+                        <i class="fa-solid fa-circle-check me-2"></i>İzin Talebini Onayla
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-action="TalebiOnayla" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@talep.Id" />
+
+                    <div class="modal-body">
+                        <div class="alert alert-info border-0">
+                            <strong>@talep.Personel?.AdSoyad</strong> personelinin
+                            <strong>@talep.BaslangicTarihi.ToString("dd.MM.yyyy") - @talep.BitisTarihi.ToString("dd.MM.yyyy")</strong>
+                            tarihleri arasındaki izin talebini onaylamak üzeresiniz.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Yetkili Notu (İsteğe Bağlı)</label>
+                            <textarea name="yetkiliNotu" class="form-control" rows="3" placeholder="Onay hakkında bir not ekleyebilirsiniz..."></textarea>
+                        </div>
+
+                        <div class="alert alert-warning border-0 mb-0">
+                            <i class="fa-solid fa-info-circle me-2"></i>
+                            <strong>Otomatik Nöbet Atama:</strong> Bu personelin izin tarihlerindeki nöbetleri varsa, zorunlu listeden otomatik olarak yedek atanacaktır.
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-check me-2"></i>Onayla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- RED MODAL -->
+    <div class="modal fade" id="redModal@(talep.Id)" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header bg-danger bg-opacity-10">
+                    <h5 class="modal-title text-danger fw-bold">
+                        <i class="fa-solid fa-circle-xmark me-2"></i>İzin Talebini Reddet
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-action="TalebiReddet" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@talep.Id" />
+
+                    <div class="modal-body">
+                        <div class="alert alert-warning border-0">
+                            <strong>@talep.Personel?.AdSoyad</strong> personelinin izin talebini reddetmek üzeresiniz.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-danger">Red Nedeni <span class="text-danger">*</span></label>
+                            <textarea name="yetkiliNotu" class="form-control" rows="3" placeholder="Personele bildirilecek red nedenini yazınız..." required></textarea>
+                            <small class="text-muted">Bu açıklama personele iletilecektir.</small>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fa-solid fa-xmark me-2"></i>Reddet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

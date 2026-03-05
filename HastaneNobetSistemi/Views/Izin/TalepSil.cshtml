@@ -1,0 +1,175 @@
+@model HastaneNobetSistemi.Models.IzinTalebi
+
+@{
+    ViewData["Title"] = "Ýzin Talebini Sil";
+    var gunSayisi = (Model.BitisTarihi.Date - Model.BaslangicTarihi.Date).Days + 1;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        background-color: #fef2f2;
+        font-family: 'Inter', sans-serif;
+    }
+
+    h4, h5 {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .delete-container {
+        max-width: 700px;
+        margin: 60px auto;
+    }
+
+    .delete-card {
+        border: none;
+        border-radius: 24px;
+        background: white;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .delete-header {
+        background: #dc2626;
+        padding: 40px;
+        text-align: center;
+        color: white;
+    }
+
+    /* Bilgi Özeti Alaný */
+    .summary-box {
+        background: #f8fafc;
+        border-radius: 18px;
+        padding: 25px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf2f7;
+    }
+
+        .info-row:last-child {
+            border: none;
+        }
+
+    .info-label {
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        color: #1e293b;
+        font-weight: 700;
+    }
+
+    /* Butonlar */
+    .btn-delete {
+        background: #dc2626;
+        color: white;
+        border: none;
+        padding: 14px 35px;
+        border-radius: 12px;
+        font-weight: 700;
+        transition: all 0.3s;
+        box-shadow: 0 8px 15px rgba(220, 38, 38, 0.2);
+    }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-back {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 14px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+    .warning-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="container delete-container">
+    <div class="delete-card">
+        <div class="delete-header">
+            <div class="warning-icon-wrapper">
+                <i class="fa-solid fa-trash-can fs-3"></i>
+            </div>
+            <h4>Talebi Silmek Ýstiyor Musunuz?</h4>
+            <p class="mb-0 opacity-75">Bu iþlem geri alýnamaz ve talep sistemden tamamen kaldýrýlýr.</p>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <div class="summary-box mb-4">
+                <h5 class="mb-4 d-flex align-items-center">
+                    <i class="fa-solid fa-file-invoice text-danger me-2"></i>
+                    Talep Özeti
+                </h5>
+
+                <div class="info-row">
+                    <span class="info-label">Baþlangýç Tarihi</span>
+                    <span class="info-value">@Model.BaslangicTarihi.ToString("dd MMMM yyyy")</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Bitiþ Tarihi</span>
+                    <span class="info-value">@Model.BitisTarihi.ToString("dd MMMM yyyy")</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Toplam Süre</span>
+                    <span class="info-value text-danger">@gunSayisi Gün</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Talep Durumu</span>
+                    <span class="info-value">
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Beklemede</span>
+                    </span>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Aciklama))
+            {
+                <div class="p-3 bg-light rounded-3 mb-4 border-start border-3 border-secondary">
+                    <label class="small fw-bold text-muted d-block mb-1">Açýklamanýz:</label>
+                    <p class="mb-0 italic">"@Model.Aciklama"</p>
+                </div>
+            }
+
+            <form asp-action="TalepSil" method="post">
+                <div class="d-flex flex-column flex-md-row gap-3">
+                    <a asp-action="TaleplerimListesi" class="btn btn-back flex-grow-1 text-center">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Vazgeç, Geri Dön
+                    </a>
+                    <button type="submit" class="btn btn-delete flex-grow-1 shadow">
+                        <i class="fa-solid fa-trash me-2"></i>Evet, Talebi Sil
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,305 @@
+@model IEnumerable<HastaneNobetSistemi.Models.IzinTalebi>
+
+@{
+    ViewData["Title"] = "Ýzin Takvimi";
+    var seciliAy = ViewBag.SeciliAy as int? ?? DateTime.Now.Month;
+    var seciliYil = ViewBag.SeciliYil as int? ?? DateTime.Now.Year;
+    var aylar = new[] { "Ocak", "Þubat", "Mart", "Nisan", "Mayýs", "Haziran", "Temmuz", "Aðustos", "Eylül", "Ekim", "Kasým", "Aralýk" };
+
+    var ayBas = new DateTime(seciliYil, seciliAy, 1);
+    var aySon = ayBas.AddMonths(1).AddDays(-1);
+    var gunSayisi = aySon.Day;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-bg: #f4f7fe;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--secondary-bg);
+        color: #2d3748;
+    }
+
+    /* Header & Filter Card */
+    .page-header {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 2rem;
+    }
+
+    .filter-card {
+        background: #fff;
+        border: none;
+        border-radius: 15px;
+        padding: 1.5rem;
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+
+    /* Calendar Table */
+    .calendar-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background-color: #f8fafc;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        color: #718096;
+        padding: 1.2rem;
+        border: none;
+    }
+
+    .calendar-row {
+        transition: all 0.2s;
+    }
+
+        .calendar-row:hover {
+            background-color: #f1f5f9 !important;
+        }
+
+    .day-box {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .weekend-row {
+        background-color: #fffaf0;
+    }
+
+    .today-row {
+        background-color: #ebf8ff !important;
+        border-left: 5px solid #3182ce;
+    }
+
+    /* Badges */
+    .person-badge {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .date-indicator {
+        font-size: 0.7rem;
+        color: #a0aec0;
+        margin-left: 8px;
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+
+    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-calendar-check text-primary me-3"></i>Ýzin Takvimi</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 small">
+                    <li class="breadcrumb-item"><a href="#">Yönetim</a></li>
+                    <li class="breadcrumb-item active">@aylar[seciliAy - 1] @seciliYil</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="fa-solid fa-print me-2"></i>Yazdýr
+            </button>
+            <a asp-action="YonetimPaneli" class="btn btn-primary rounded-pill px-4 shadow">
+                <i class="fa-solid fa-house me-2"></i>Panel
+            </a>
+        </div>
+    </div>
+
+    <div class="filter-card shadow-sm mb-4">
+        <form asp-action="IzinTakvimi" method="get" class="row g-3 align-items-center">
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Görüntülenen Dönem</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-primary"><i class="fa-solid fa-clock"></i></span>
+                    <div class="form-control border-start-0 fw-bold">@aylar[seciliAy - 1] @seciliYil</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Ay Seçimi</label>
+                <select name="ay" class="form-select border-0 bg-light shadow-none">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i" selected="@(seciliAy == i)">@aylar[i - 1]</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted mb-1">Yýl Seçimi</label>
+                <select name="yil" class="form-select border-0 bg-light shadow-none">
+                    @for (int i = DateTime.Now.Year - 1; i <= DateTime.Now.Year + 2; i++)
+                    {
+                        <option value="@i" selected="@(seciliYil == i)">@i</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3 d-grid">
+                <label class="mb-1 invisible">Buton</label>
+                <button type="submit" class="btn btn-dark fw-bold rounded-3 py-2">
+                    <i class="fa-solid fa-rotate me-2"></i>Takvimi Güncelle
+                </button>
+            </div>
+        </form>
+    </div>
+
+    @{
+        var toplamIzinGunu = Model.Sum(i => (i.BitisTarihi.Date - i.BaslangicTarihi.Date).Days + 1);
+        var izinliPersonelSayisi = Model.Select(i => i.PersonelId).Distinct().Count();
+    }
+    <div class="row mb-4 g-3">
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+                        <i class="fa-solid fa-file-signature fs-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">@Model.Count()</h3>
+                        <p class="text-muted small mb-0">Toplam Kayýt</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card shadow-sm h-100">
+                <div class="card-body d-flex align-items-center border-start border-success border-4">
+                    <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+                        <i class="fa-solid fa-sun fs-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">@toplamIzinGunu</h3>
+                        <p class="text-muted small mb-0">Kullanýlan Gün</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
+                        <i class="fa-solid fa-users fs-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">@izinliPersonelSayisi</h3>
+                        <p class="text-muted small mb-0">Farklý Personel</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card shadow-sm h-100 bg-dark text-white">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-20 me-3">
+                        <i class="fa-solid fa-calendar-day fs-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">@gunSayisi</h3>
+                        <p class="text-white text-opacity-75 small mb-0">Ayýn Gün Sayýsý</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="calendar-container shadow-sm border">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th width="150" class="ps-4">GÜN</th>
+                        <th width="180" class="text-center">TARÝH</th>
+                        <th>ÝZÝNLÝ PERSONEL VE DURUM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int gun = 1; gun <= gunSayisi; gun++)
+                    {
+                        var tarih = new DateTime(seciliYil, seciliAy, gun);
+                        var gunIsmi = tarih.ToString("dddd");
+                        var bugunku = tarih.Date == DateTime.Today;
+                        var haftaSonu = tarih.DayOfWeek == DayOfWeek.Saturday || tarih.DayOfWeek == DayOfWeek.Sunday;
+                        var izinliler = Model.Where(i => tarih.Date >= i.BaslangicTarihi.Date && tarih.Date <= i.BitisTarihi.Date).ToList();
+
+                        <tr class="calendar-row @(bugunku ? "today-row" : haftaSonu ? "weekend-row" : "")">
+                            <td class="ps-4">
+                                <div class="day-box @(haftaSonu ? "bg-danger bg-opacity-10 text-danger" : "bg-light text-dark")">
+                                    @gun
+                                </div>
+                                <span class="small fw-medium @(haftaSonu ? "text-danger" : "text-muted")">@gunIsmi</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @(bugunku ? "bg-primary" : "bg-light text-dark") rounded-pill px-3 py-2">
+                                    @tarih.ToString("dd.MM.yyyy")
+                                </span>
+                            </td>
+                            <td>
+                                @if (izinliler.Any())
+                                {
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach (var izin in izinliler)
+                                        {
+                                            <div class="person-badge">
+                                                <i class="fa-solid fa-user-circle text-primary me-2"></i>
+                                                <span>@izin.Personel?.AdSoyad</span>
+                                                <span class="date-indicator">
+                                                    (@izin.BaslangicTarihi.ToString("dd/MM") - @izin.BitisTarihi.ToString("dd/MM"))
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small opacity-50"><i class="fa-solid fa-circle-check me-2"></i>Tam Kadro Çalýþýlýyor</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

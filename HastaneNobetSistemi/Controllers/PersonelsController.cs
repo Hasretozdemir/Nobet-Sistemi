@@ -20,6 +20,12 @@ public class PersonelsController : Controller
         _userManager = userManager;
     }
 
+    private async Task<string> GetYetkiliUserId()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        return user!.Id;
+    }
+
     // GET: Personels
     public async Task<IActionResult> Index()
     {
@@ -28,7 +34,11 @@ public class PersonelsController : Controller
             return Problem("Veritabanı bağlantısı kurulamadı (Personeller seti null).");
         }
 
-        var personeller = await _context.Personeller.OrderBy(p => p.AdSoyad).ToListAsync();
+        var yetkiliUserId = await GetYetkiliUserId();
+        var personeller = await _context.Personeller
+            .Where(p => p.YetkiliUserId == yetkiliUserId)
+            .OrderBy(p => p.AdSoyad)
+            .ToListAsync();
         return View(personeller);
     }
 
@@ -40,7 +50,8 @@ public class PersonelsController : Controller
             return NotFound();
         }
 
-        var personel = await _context.Personeller.FirstOrDefaultAsync(m => m.Id == id);
+        var yetkiliUserId = await GetYetkiliUserId();
+        var personel = await _context.Personeller.FirstOrDefaultAsync(m => m.Id == id && m.YetkiliUserId == yetkiliUserId);
         if (personel == null)
         {
             return NotFound();
@@ -60,6 +71,20 @@ public class PersonelsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(PersonelKayitViewModel model)
     {
+        // İcap+Uzaktan seçiliyse Normal ücret alanını sıfırla (validation sorununu önle)
+        if (model.UcretTipi == "IcapUzaktan")
+        {
+            model.NobetUcreti = 0;
+        }
+        else
+        {
+            // Normal seçiliyse İcap/Uzaktan alanlarını sıfırla
+            model.IcapSaatlikUcret = 0;
+            model.IcapSaat = 0;
+            model.UzaktanSaatlikUcret = 0;
+            model.UzaktanSaat = 0;
+        }
+
         if (ModelState.IsValid)
         {
             // 1. E-posta kontrolü
@@ -70,22 +95,35 @@ public class PersonelsController : Controller
                 return View(model);
             }
 
+            var yetkiliUser = await _userManager.GetUserAsync(User);
+            var yetkiliUserId = yetkiliUser!.Id;
+
             // 2. Personel kaydını oluştur
             var personel = new Personel
             {
                 AdSoyad = model.AdSoyad,
+                SicilNo = model.SicilNo,
+                Birim = model.Birim,
                 IseGirisTarihi = model.IseGirisTarihi,
                 AktifMi = model.AktifMi,
-                YedekMi = model.YedekMi
+                YedekMi = model.YedekMi,
+                Unvan = model.Unvan,
+                NobetUcreti = model.NobetUcreti,
+                UcretTipi = model.UcretTipi,
+                IcapSaatlikUcret = model.IcapSaatlikUcret,
+                IcapSaat = model.IcapSaat,
+                UzaktanSaatlikUcret = model.UzaktanSaatlikUcret,
+                UzaktanSaat = model.UzaktanSaat,
+                YetkiliUserId = yetkiliUserId
             };
 
             // Ortalama kuralı (nöbet yığılmasını önler)
-            var mevcutMaxSira = await _context.Personeller.AnyAsync();
+            var mevcutMaxSira = await _context.Personeller.Where(p => p.YetkiliUserId == yetkiliUserId).AnyAsync();
             if (mevcutMaxSira)
             {
-                personel.ToplamHaftaIci = (int)(await _context.Personeller.AverageAsync(p => p.ToplamHaftaIci));
-                personel.ToplamHaftaSonu = (int)(await _context.Personeller.AverageAsync(p => p.ToplamHaftaSonu));
-                personel.ToplamBayram = (int)(await _context.Personeller.AverageAsync(p => p.ToplamBayram));
+                personel.ToplamHaftaIci = (int)(await _context.Personeller.Where(p => p.YetkiliUserId == yetkiliUserId).AverageAsync(p => p.ToplamHaftaIci));
+                personel.ToplamHaftaSonu = (int)(await _context.Personeller.Where(p => p.YetkiliUserId == yetkiliUserId).AverageAsync(p => p.ToplamHaftaSonu));
+                personel.ToplamBayram = (int)(await _context.Personeller.Where(p => p.YetkiliUserId == yetkiliUserId).AverageAsync(p => p.ToplamBayram));
             }
             else
             {
@@ -108,6 +146,7 @@ public class PersonelsController : Controller
                 UserName = model.Email,
                 Email = model.Email,
                 AdSoyad = model.AdSoyad,
+                IsletmeAdi = yetkiliUser.IsletmeAdi,
                 EmailConfirmed = true,
                 PersonelId = personel.Id
             };
@@ -145,7 +184,8 @@ public class PersonelsController : Controller
             return NotFound();
         }
 
-        var personel = await _context.Personeller.FindAsync(id);
+        var yetkiliUserId = await GetYetkiliUserId();
+        var personel = await _context.Personeller.FirstOrDefaultAsync(p => p.Id == id && p.YetkiliUserId == yetkiliUserId);
         if (personel == null)
         {
             return NotFound();
@@ -160,10 +200,17 @@ public class PersonelsController : Controller
     {
         if (id != personel.Id) return NotFound();
 
+        var yetkiliUserId = await GetYetkiliUserId();
+        var mevcutPersonel = await _context.Personeller.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id && p.YetkiliUserId == yetkiliUserId);
+        if (mevcutPersonel == null) return NotFound();
+
         if (ModelState.IsValid)
         {
             try
             {
+                // YetkiliUserId'yi koru
+                personel.YetkiliUserId = yetkiliUserId;
+
                 // 1. Personel Bilgilerini Güncelle
                 _context.Update(personel);
 
@@ -214,7 +261,8 @@ public class PersonelsController : Controller
             return NotFound();
         }
 
-        var personel = await _context.Personeller.FirstOrDefaultAsync(m => m.Id == id);
+        var yetkiliUserId = await GetYetkiliUserId();
+        var personel = await _context.Personeller.FirstOrDefaultAsync(m => m.Id == id && m.YetkiliUserId == yetkiliUserId);
         if (personel == null)
         {
             return NotFound();
@@ -233,7 +281,8 @@ public class PersonelsController : Controller
             return Problem("Entity set 'AppDbContext.Personeller' is null.");
         }
 
-        var personel = await _context.Personeller.FindAsync(id);
+        var yetkiliUserId = await GetYetkiliUserId();
+        var personel = await _context.Personeller.FirstOrDefaultAsync(p => p.Id == id && p.YetkiliUserId == yetkiliUserId);
         if (personel != null)
         {
             // 1. Kullanıcı hesabını sil
@@ -259,8 +308,11 @@ public class PersonelsController : Controller
     // ✅ YENİ: Toplu Hesap Oluşturma (Eski personeller için)
     public async Task<IActionResult> CreateAllAccounts()
     {
+        var yetkiliUser = await _userManager.GetUserAsync(User);
+        var yetkiliUserId = yetkiliUser!.Id;
+
         var personellerWithoutAccount = await _context.Personeller
-            .Where(p => p.AktifMi == true)
+            .Where(p => p.AktifMi == true && p.YetkiliUserId == yetkiliUserId)
             .ToListAsync();
 
         int olusturulan = 0;
@@ -277,6 +329,7 @@ public class PersonelsController : Controller
                     UserName = email,
                     Email = email,
                     AdSoyad = personel.AdSoyad,
+                    IsletmeAdi = yetkiliUser.IsletmeAdi,
                     EmailConfirmed = true,
                     PersonelId = personel.Id
                 };

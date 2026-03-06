@@ -65,6 +65,14 @@
                                 </div>
                             </div>
 
+                            <div class="info-item mb-4">
+                                <label class="text-muted small text-uppercase fw-bold">Ünvan (Görev)</label>
+                                <div class="d-flex align-items-center mt-1">
+                                    <i class="fas fa-briefcase text-primary me-3 fs-5"></i>
+                                    <span class="fw-medium">@(string.IsNullOrEmpty(Model.Unvan) ? "Belirlenmedi" : Model.Unvan)</span>
+                                </div>
+                            </div>
+
                             <div class="info-item mb-0">
                                 <label class="text-muted small text-uppercase fw-bold">Kuruma Giriş</label>
                                 <div class="d-flex align-items-center mt-1">
@@ -76,6 +84,14 @@
 
                         <div class="col-lg-6">
                             <h5 class="fw-bold text-dark mb-4 pb-2 border-bottom">Nöbet İstatistikleri</h5>
+
+                            @{
+                                var detayNobetBasinaUcret = Model.UcretTipi == "IcapUzaktan"
+                                    ? (Model.IcapSaatlikUcret * Model.IcapSaat) + (Model.UzaktanSaatlikUcret * Model.UzaktanSaat)
+                                    : Model.NobetUcreti;
+                                var detayToplamNobet = Model.ToplamHaftaIci + Model.ToplamHaftaSonu + Model.ToplamBayram;
+                                var detayToplamKazanc = detayToplamNobet * detayNobetBasinaUcret;
+                            }
 
                             <div class="row g-3">
                                 <div class="col-6">
@@ -92,6 +108,42 @@
                                         <div class="text-xs text-warning">Toplam Nöbet</div>
                                     </div>
                                 </div>
+                                <div class="col-6">
+                                    <div class="stat-box p-3 rounded-4 border text-center">
+                                        <div class="text-muted small mb-1">Nöbet Ücreti</div>
+                                        <div class="fs-4 fw-bold text-success">@detayNobetBasinaUcret.ToString("N2") ₺</div>
+                                        <div class="text-xs text-success">
+                                            Nöbet Başına
+                                            @if (Model.UcretTipi == "IcapUzaktan")
+                                            {
+                                                <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 ms-1" style="font-size:0.55rem;">İcap+Uzaktan</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-box p-3 rounded-4 border text-center" style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+                                        <div class="text-muted small mb-1">Toplam Kazanç</div>
+                                        <div class="fs-4 fw-bold text-success">@detayToplamKazanc.ToString("N2") ₺</div>
+                                        <div class="text-xs text-success">Genel Toplam</div>
+                                    </div>
+                                </div>
+                                @if (Model.UcretTipi == "IcapUzaktan")
+                                {
+                                    <div class="col-12">
+                                        <div class="stat-box p-3 rounded-4 border">
+                                            <div class="text-muted small mb-2 fw-bold text-uppercase">Ücret Detayı</div>
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="small"><i class="fa-solid fa-phone-volume text-info me-2"></i>İcap: @Model.IcapSaatlikUcret.ToString("N2") ₺ × @Model.IcapSaat saat</span>
+                                                <span class="fw-bold text-dark">@((Model.IcapSaatlikUcret * Model.IcapSaat).ToString("N2")) ₺</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="small"><i class="fa-solid fa-laptop text-warning me-2"></i>Uzaktan: @Model.UzaktanSaatlikUcret.ToString("N2") ₺ × @Model.UzaktanSaat saat</span>
+                                                <span class="fw-bold text-dark">@((Model.UzaktanSaatlikUcret * Model.UzaktanSaat).ToString("N2")) ₺</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                                 <div class="col-12">
                                     <div class="stat-box p-3 rounded-4 border d-flex align-items-center justify-content-between px-4">
                                         <div class="text-start">

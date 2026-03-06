@@ -7,306 +7,501 @@
     var seciliAy = ViewBag.SeciliAy as int? ?? DateTime.Now.Month;
     var seciliYil = ViewBag.SeciliYil as int? ?? DateTime.Now.Year;
     var aylar = new[] { "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık" };
+
+    var nobetBasinaUcretListesi = personel?.UcretTipi == "IcapUzaktan"
+        ? (personel.IcapSaatlikUcret * personel.IcapSaat) + (personel.UzaktanSaatlikUcret * personel.UzaktanSaat)
+        : personel?.NobetUcreti ?? 0;
 }
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
     body {
-        background-color: #f0f2f5;
+        background-color: #f4f7fe;
         font-family: 'Inter', sans-serif;
+        color: #2d3748;
     }
 
-    h3, h5, .month-name {
-        font-family: 'Montserrat', sans-serif;
+    /* Header */
+    .page-header {
+        background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+        border-radius: 24px;
+        box-shadow: 0 10px 25px rgba(67, 97, 238, 0.15);
     }
 
-    /* Header & Gradient Background */
-    .dashboard-header {
-        background: linear-gradient(135deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
-        border-radius: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        padding: 40px;
-        color: white;
-        margin-bottom: -60px; /* Overlap effect */
-    }
-
-    /* Period Picker Navigation */
+    /* Dönem Navigasyonu */
     .period-nav {
         background: white;
-        border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        padding: 15px;
-        margin-bottom: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
     }
 
     .period-link {
         padding: 10px 20px;
         border-radius: 12px;
         text-decoration: none;
-        color: #4a5568;
+        color: #718096;
         font-weight: 600;
-        transition: all 0.3s;
+        font-size: 0.85rem;
+        transition: all 0.2s;
         border: 2px solid transparent;
     }
 
         .period-link:hover {
-            background: #f8fafc;
+            background: #f4f7fe;
             color: #4361ee;
         }
 
         .period-link.active {
-            background: #eef2ff;
-            color: #4361ee;
+            background: #4361ee;
+            color: #fff;
             border-color: #4361ee;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
         }
 
-    /* Duty Cards & Rows */
-    .duty-card {
-        background: white;
-        border-radius: 25px;
+    /* Kartlar */
+    .custom-card {
         border: none;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-        overflow: hidden;
+        border-radius: 20px;
+        background: #fff;
+        transition: transform 0.2s;
     }
 
+        .custom-card:hover {
+            transform: translateY(-2px);
+        }
+
+    /* Tablo */
     .table thead th {
         background: #f8fafc;
         text-transform: uppercase;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         letter-spacing: 1px;
-        color: #718096;
-        padding: 1.5rem 1rem;
+        color: #a0aec0;
+        font-weight: 700;
+        padding: 1rem 1rem;
         border: none;
     }
 
-    .duty-row-today {
-        background-color: #fff9db !important;
-        border-left: 6px solid #fcc419;
+    .table tbody tr {
+        transition: all 0.15s;
     }
 
+    .table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    /* Tarih Badge */
     .date-badge {
-        width: 50px;
-        height: 50px;
+        width: 52px;
+        height: 52px;
         background: #f1f5f9;
-        border-radius: 12px;
+        border-radius: 14px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         line-height: 1;
+        transition: all 0.2s;
     }
 
-    /* Status Pills */
-    .badge-soft {
-        padding: 8px 16px;
-        border-radius: 10px;
+    .date-badge-today {
+        background: #4361ee !important;
+        color: #fff !important;
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+    }
+
+    .date-badge-today span,
+    .date-badge-today small {
+        color: #fff !important;
+    }
+
+    .date-badge-past {
+        background: #f0fdf4;
+    }
+
+    /* Bugün satırı */
+    .row-today {
+        background: #eef2ff !important;
+        border-left: 4px solid #4361ee;
+    }
+
+    .row-past {
+        opacity: 0.6;
+    }
+
+    /* Nöbet Tipi Badge'leri */
+    .type-badge {
+        padding: 6px 14px;
+        border-radius: 8px;
         font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.3px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
-    .bg-soft-info {
-        background: #e0f2fe;
-        color: #0369a1;
+    .type-haftaici {
+        background: #eef2ff;
+        color: #4361ee;
     }
 
-    .bg-soft-warning {
+    .type-haftasonu {
         background: #fef3c7;
         color: #92400e;
     }
 
-    .bg-soft-danger {
-        background: #fee2e2;
-        color: #991b1b;
+    .type-bayram {
+        background: #fce7f3;
+        color: #9d174d;
     }
 
-    /* Stats Section */
-    .stat-mini-card {
-        background: #fff;
-        padding: 20px;
-        border-radius: 20px;
+    /* İstatistik Kartları */
+    .stat-card {
+        border-radius: 16px;
+        border: none;
+        padding: 24px;
         text-align: center;
-        border-bottom: 5px solid transparent;
+        background: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .stat-card-primary::before { background: #4361ee; }
+    .stat-card-warning::before { background: #f59e0b; }
+    .stat-card-pink::before { background: #ec4899; }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+    }
+
+    /* Ücret Kartı */
+    .earning-card {
+        background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+        border-radius: 20px;
+        border: none;
+    }
+
+    /* Durum Badge */
+    .status-today {
+        background: #4361ee;
+        color: #fff;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 3px 10px rgba(67, 97, 238, 0.3);
+    }
+
+    .status-done {
+        color: #16a34a;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .status-remaining {
+        color: #a0aec0;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Buton */
+    .btn-swap {
+        background: #eef2ff;
+        color: #4361ee;
+        border: 1.5px solid #c7d2fe;
+        font-weight: 600;
+        font-size: 0.78rem;
+        padding: 6px 16px;
+        border-radius: 10px;
+        transition: all 0.2s;
+    }
+
+    .btn-swap:hover {
+        background: #4361ee;
+        color: #fff;
+        border-color: #4361ee;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
+    }
+
+    /* Boş Durum */
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        background: #f1f5f9;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    .pulse-dot {
+        animation: pulse-dot 2s infinite;
+    }
+
+    @@keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
     }
 </style>
 
-<div class="container py-5">
-    <div class="dashboard-header text-center text-md-start">
-        <div class="row align-items-center">
+<div class="container py-4">
+
+    <!-- HEADER -->
+    <div class="page-header p-4 p-md-5 mb-5 text-white position-relative overflow-hidden">
+        <div class="row align-items-center position-relative" style="z-index: 2;">
             <div class="col-md-8">
-                <span class="badge bg-white bg-opacity-25 mb-2 px-3">Hoş Geldiniz, Sayın</span>
-                <h1 class="display-6 fw-bold mb-2">@personel.AdSoyad</h1>
-                <p class="mb-0 opacity-75"><i class="fa-solid fa-hospital-user me-2"></i>@personel.Birim - @aylar[seciliAy - 1] @seciliYil Nöbet Durumu</p>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-white bg-opacity-20 p-2 rounded-3 me-3">
+                        <i class="fa-solid fa-calendar-days fs-4"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-0">Nöbet Listem</h2>
+                        <p class="opacity-75 mb-0 small">@personel?.AdSoyad · @personel?.Birim</p>
+                    </div>
+                </div>
+                <span class="badge bg-white bg-opacity-20 px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-calendar-check me-1"></i> @aylar[seciliAy - 1] @seciliYil Dönemi
+                </span>
             </div>
-            <div class="col-md-4 text-md-end mt-4 mt-md-0">
-                <div class="d-inline-block bg-white bg-opacity-20 p-3 rounded-4 backdrop-blur">
-                    <h5 class="mb-0 fw-bold">@(nobetlerim?.Count ?? 0) Nöbet</h5>
-                    <small class="opacity-75">Bu Ay Toplam</small>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="bg-white bg-opacity-15 d-inline-block p-3 rounded-4">
+                    <h3 class="fw-bold mb-0">@(nobetlerim?.Count ?? 0)</h3>
+                    <small class="opacity-75 d-block">Toplam Nöbet</small>
                 </div>
             </div>
         </div>
+        <i class="fa-solid fa-calendar-days position-absolute" style="font-size: 140px; right: -10px; bottom: -25px; opacity: 0.05;"></i>
     </div>
 
-    <div class="position-relative" style="z-index: 2;">
-
-        <div class="period-nav d-flex justify-content-center flex-wrap gap-2 shadow-sm">
-            @if (yayinlar != null)
+    <!-- DÖNEM NAVİGASYONU -->
+    <div class="period-nav p-3 d-flex justify-content-center flex-wrap gap-2 mb-4">
+        @if (yayinlar != null && yayinlar.Any())
+        {
+            @foreach (var yayin in yayinlar.OrderByDescending(y => y.Yil).ThenByDescending(y => y.Ay).Take(5))
             {
-                @foreach (var yayin in yayinlar.OrderByDescending(y => y.Yil).ThenByDescending(y => y.Ay).Take(5))
-                {
-                    var aktif = yayin.Ay == seciliAy && yayin.Yil == seciliYil;
-                    <a href="@Url.Action("NobetListesi", new { ay = yayin.Ay, yil = yayin.Yil })"
-                       class="period-link @(aktif ? "active" : "")">
-                        @aylar[yayin.Ay - 1] @yayin.Yil
-                    </a>
-                }
+                var aktif = yayin.Ay == seciliAy && yayin.Yil == seciliYil;
+                <a href="@Url.Action("NobetListesi", new { ay = yayin.Ay, yil = yayin.Yil })"
+                   class="period-link @(aktif ? "active" : "")">
+                    <i class="fa-solid fa-calendar-day me-1"></i> @aylar[yayin.Ay - 1] @yayin.Yil
+                </a>
+            }
+        }
+        else
+        {
+            <span class="text-muted small py-2"><i class="fa-solid fa-info-circle me-1"></i>Henüz yayınlanmış dönem bulunmuyor</span>
+        }
+    </div>
+
+    <!-- NÖBET LİSTESİ -->
+    <div class="card custom-card shadow-sm mb-4">
+        <div class="card-body p-0">
+            @if (!yayindaMi)
+            {
+                <div class="text-center py-5 px-4">
+                    <div class="empty-state-icon mx-auto">
+                        <i class="fa-solid fa-lock text-muted fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mt-2">Dönem Henüz Yayınlanmadı</h5>
+                    <p class="text-muted small mb-0">@aylar[seciliAy - 1] @seciliYil nöbet listesi henüz yönetim tarafından yayınlanmamıştır.</p>
+                </div>
+            }
+            else if (nobetlerim == null || !nobetlerim.Any())
+            {
+                <div class="text-center py-5 px-4">
+                    <div class="empty-state-icon mx-auto" style="background: #f0fdf4;">
+                        <i class="fa-solid fa-face-smile text-success fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mt-2">Bu Ay Nöbetiniz Yok!</h5>
+                    <p class="text-muted small mb-0">@aylar[seciliAy - 1] döneminde size atanmış nöbet bulunmuyor.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Tarih</th>
+                                <th>Nöbet Tipi</th>
+                                <th>Durum</th>
+                                <th class="text-end pe-4">Aksiyon</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var nobet in nobetlerim.OrderBy(n => n.Tarih))
+                            {
+                                var gecmis = nobet.Tarih.Date < DateTime.Today;
+                                var bugun = nobet.Tarih.Date == DateTime.Today;
+                                var gelecek = nobet.Tarih.Date > DateTime.Today;
+                                var kalanGun = (nobet.Tarih.Date - DateTime.Today).Days;
+
+                                <tr class="@(bugun ? "row-today" : gecmis ? "row-past" : "")">
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="date-badge me-3 @(bugun ? "date-badge-today" : gecmis ? "date-badge-past" : "")">
+                                                <small class="fw-bold" style="font-size: 0.6rem;">@nobet.Tarih.ToString("MMM").ToUpper()</small>
+                                                <span class="fs-5 fw-bold">@nobet.Tarih.Day</span>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark" style="font-size: 0.9rem;">@nobet.Tarih.ToString("dddd")</div>
+                                                <small class="text-muted">@nobet.Tarih.ToString("dd.MM.yyyy")</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (nobet.NobetTipi == "HaftaIci")
+                                        {
+                                            <span class="type-badge type-haftaici">
+                                                <i class="fa-solid fa-building" style="font-size: 0.65rem;"></i> Hafta İçi
+                                            </span>
+                                        }
+                                        else if (nobet.NobetTipi == "HaftaSonu")
+                                        {
+                                            <span class="type-badge type-haftasonu">
+                                                <i class="fa-solid fa-mug-hot" style="font-size: 0.65rem;"></i> Hafta Sonu
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="type-badge type-bayram">
+                                                <i class="fa-solid fa-star" style="font-size: 0.65rem;"></i> Resmi Tatil
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (bugun)
+                                        {
+                                            <span class="status-today"><i class="fa-solid fa-circle pulse-dot" style="font-size: 0.5rem;"></i> NÖBETTESİNİZ</span>
+                                        }
+                                        else if (gecmis)
+                                        {
+                                            <span class="status-done"><i class="fa-solid fa-circle-check me-1"></i>Tamamlandı</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-remaining"><i class="fa-regular fa-clock me-1"></i>@kalanGun gün kaldı</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        @if (gelecek)
+                                        {
+                                            <a asp-controller="NobetTakas" asp-action="Create" class="btn btn-swap">
+                                                <i class="fa-solid fa-arrows-rotate me-1"></i>Takas
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
         </div>
+    </div>
 
-        <div class="duty-card shadow-lg mb-5">
-            <div class="card-body p-0">
-                @if (!yayindaMi)
-                {
-                    <div class="text-center py-5">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3593/3593504.png" width="120" class="mb-4 opacity-50">
-                        <h4 class="text-muted fw-bold">Dönem Henüz Yayınlanmadı</h4>
-                        <p class="text-secondary px-5">@aylar[seciliAy - 1] ayı nöbet listesi henüz yönetim tarafından onaylanıp paylaşıma açılmamıştır.</p>
+    <!-- İSTATİSTİKLER -->
+    @if (nobetlerim != null && nobetlerim.Any())
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card shadow-sm stat-card-primary">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary mx-auto">
+                        <i class="fa-solid fa-building"></i>
                     </div>
-                }
-                else if (nobetlerim == null || !nobetlerim.Any())
-                {
-                    <div class="text-center py-5">
-                        <img src="https://cdn-icons-png.flaticon.com/512/4334/4334057.png" width="120" class="mb-4">
-                        <h4 class="text-success fw-bold">Bu Ay Nöbetiniz Yok!</h4>
-                        <p class="text-secondary">Harika! @aylar[seciliAy - 1] döneminde size atanmış herhangi bir nöbet bulunmuyor.</p>
+                    <div class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing: 0.5px;">Hafta Içi</div>
+                    <h2 class="fw-bold mb-0" style="color: #4361ee;">@nobetlerim.Count(n => n.NobetTipi == "HaftaIci")</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card shadow-sm stat-card-warning">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning mx-auto">
+                        <i class="fa-solid fa-mug-hot"></i>
                     </div>
-                }
-                else
-                {
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="ps-4">TARİH</th>
-                                    <th>NÖBET TİPİ</th>
-                                    <th>DURUM</th>
-                                    <th class="text-end pe-4">AKSİYON</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var nobet in nobetlerim.OrderBy(n => n.Tarih))
-                                {
-                                    var gecmis = nobet.Tarih.Date < DateTime.Today;
-                                    var bugun = nobet.Tarih.Date == DateTime.Today;
-                                    var gelecek = nobet.Tarih.Date > DateTime.Today;
-
-                                    <tr class="@(bugun ? "duty-row-today" : "")">
-                                        <td class="ps-4 py-4">
-                                            <div class="d-flex align-items-center">
-                                                <div class="date-badge me-3 @(bugun ? "bg-warning text-dark" : "")">
-                                                    <span class="small fw-bold">@nobet.Tarih.ToString("MMM").ToUpper()</span>
-                                                    <span class="fs-5 fw-bold">@nobet.Tarih.Day</span>
-                                                </div>
-                                                <div>
-                                                    <div class="fw-bold text-dark">@nobet.Tarih.ToString("dddd")</div>
-                                                    <small class="text-muted">@nobet.Tarih.ToString("dd.MM.yyyy")</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            @if (nobet.NobetTipi == "HaftaIci")
-                                            {
-                                                <span class="badge-soft bg-soft-info">Hafta İçi</span>
-                                            }
-                                            else if (nobet.NobetTipi == "HaftaSonu")
-                                            {
-
-                                                <span class="badge-soft bg-soft-warning">Hafta Sonu</span>
-                                            }
-                                            else
-                                            {
-
-                                                <span class="badge-soft bg-soft-danger">Resmi Tatil</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (bugun)
-                                            {
-                                                <span class="badge rounded-pill bg-danger shadow-sm"><i class="fa-solid fa-bullhorn me-1 pulse"></i> NÖBET GÜNÜ</span>
-                                            }
-                                            else if (gecmis)
-                                            {
-
-                                                <span class="text-success small fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Tamamlandı</span>
-                                            }
-                                            else
-                                            {
-
-                                                <span class="text-muted small">@((nobet.Tarih - DateTime.Today).Days) gün kaldı</span>
-                                            }
-                                        </td>
-                                        <td class="text-end pe-4">
-                                            @if (gelecek)
-                                            {
-                                                <a asp-controller="NobetTakas" asp-action="Create" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm">
-                                                    <i class="fa-solid fa-arrows-rotate me-1"></i>Takas Talebi
-                                                </a>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                    <div class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing: 0.5px;">Hafta Sonu</div>
+                    <h2 class="fw-bold mb-0" style="color: #f59e0b;">@nobetlerim.Count(n => n.NobetTipi == "HaftaSonu")</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card shadow-sm stat-card-pink">
+                    <div class="stat-icon mx-auto" style="background: rgba(236,72,153,0.1); color: #ec4899;">
+                        <i class="fa-solid fa-star"></i>
                     </div>
-                }
+                    <div class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing: 0.5px;">Resmi Tatil</div>
+                    <h2 class="fw-bold mb-0" style="color: #ec4899;">@nobetlerim.Count(n => n.NobetTipi == "Bayram")</h2>
+                </div>
             </div>
         </div>
+    }
 
-        @if (nobetlerim != null && nobetlerim.Any())
-        {
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="stat-mini-card shadow-sm border-primary">
-                        <h6 class="text-muted mb-2">Hafta İçi</h6>
-                        <h2 class="fw-bold text-primary mb-0">@nobetlerim.Count(n => n.NobetTipi == "HaftaIci")</h2>
+    @if (nobetlerim != null && nobetlerim.Any() && nobetBasinaUcretListesi > 0)
+    {
+        var buAyToplam = nobetlerim.Count;
+        var buAyUcret = buAyToplam * nobetBasinaUcretListesi;
+        <div class="card earning-card shadow-sm overflow-hidden mb-4">
+            <div class="card-body p-4 text-white">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <div class="bg-white bg-opacity-15 p-3 rounded-4">
+                            <i class="fa-solid fa-turkish-lira-sign fs-3"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-mini-card shadow-sm border-warning">
-                        <h6 class="text-muted mb-2">Hafta Sonu</h6>
-                        <h2 class="fw-bold text-warning mb-0">@nobetlerim.Count(n => n.NobetTipi == "HaftaSonu")</h2>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-mini-card shadow-sm border-danger">
-                        <h6 class="text-muted mb-2">Resmi Tatil</h6>
-                        <h2 class="fw-bold text-danger mb-0">@nobetlerim.Count(n => n.NobetTipi == "Bayram")</h2>
+                    <div class="col">
+                        <small class="text-white-50 d-block">Bu Ay Tahmini Nöbet Ücreti</small>
+                        <div class="d-flex align-items-baseline gap-2 flex-wrap">
+                            <h3 class="fw-bold mb-0">@buAyUcret.ToString("N2") ₺</h3>
+                            <small class="text-white-50">(@nobetBasinaUcretListesi.ToString("N2") ₺ × @buAyToplam nöbet)</small>
+                        </div>
+                        @if (personel?.UcretTipi == "IcapUzaktan")
+                        {
+                            <div class="mt-2" style="font-size:0.72rem;">
+                                <span class="bg-white bg-opacity-15 rounded-pill px-2 py-1 me-1">
+                                    <i class="fa-solid fa-phone-volume me-1"></i>İcap: @personel.IcapSaatlikUcret.ToString("N2")₺ × @personel.IcapSaat sa
+                                </span>
+                                <span class="bg-white bg-opacity-15 rounded-pill px-2 py-1">
+                                    <i class="fa-solid fa-laptop me-1"></i>Uzaktan: @personel.UzaktanSaatlikUcret.ToString("N2")₺ × @personel.UzaktanSaat sa
+                                </span>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
-        }
+        </div>
+    }
+
+    <!-- GERİ DÖN -->
+    <div class="text-center">
+        <a asp-action="Dashboard" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold" style="transition: all 0.2s;">
+            <i class="fa-solid fa-arrow-left me-2"></i>Dashboard'a Dön
+        </a>
     </div>
 </div>
-
-<style>
-    .pulse {
-        animation: pulse-animation 2s infinite;
-    }
-
-    @@keyframes pulse-animation {
-        0% {
-            opacity: 1;
-        }
-
-        50% {
-            opacity: 0.5;
-        }
-
-        100% {
-            opacity: 1;
-        }
-    }
-
-    .backdrop-blur {
-        backdrop-filter: blur(5px);
-    }
-</style>

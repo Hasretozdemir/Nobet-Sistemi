@@ -18,6 +18,23 @@ namespace HastaneNobetSistemi.Models
         [StringLength(100)]
         public string? Birim { get; set; }
 
+        // Ünvan (Ne olarak çalıştığı)
+        [StringLength(100)]
+        public string? Unvan { get; set; }
+
+        // Nöbet başına ücret (TL) - Normal mod için
+        public decimal NobetUcreti { get; set; } = 0;
+
+        // Ücret Tipi: "Normal" veya "IcapUzaktan"
+        [StringLength(20)]
+        public string UcretTipi { get; set; } = "Normal";
+
+        // İcap + Uzaktan mod için
+        public decimal IcapSaatlikUcret { get; set; } = 0;
+        public decimal IcapSaat { get; set; } = 0;
+        public decimal UzaktanSaatlikUcret { get; set; } = 0;
+        public decimal UzaktanSaat { get; set; } = 0;
+
         [Required]
         public DateTime IseGirisTarihi { get; set; } = DateTime.Now;
 
@@ -47,6 +64,10 @@ namespace HastaneNobetSistemi.Models
         public int ToplamHaftaIci { get; set; } = 0;
         public int ToplamHaftaSonu { get; set; } = 0;
         public int ToplamBayram { get; set; } = 0;
+
+        // Hangi yetkili (işletme) tarafından oluşturulduğu
+        [StringLength(450)]
+        public string? YetkiliUserId { get; set; }
 
         public DateTime? SonNobetTarihi { get; set; }
 

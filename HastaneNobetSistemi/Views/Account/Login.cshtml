@@ -10,15 +10,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Hastane Nöbet Sistemi</title>
+    <title>@ViewData["Title"] - Nöbet Sistemi</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
         :root {
             --yetkili-color: #667eea;
             --yetkili-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --personel-color: #43cea2;
-            --personel-grad: linear-gradient(135deg, #43cea2 0%,| #185a9d 100%);
+            --personel-color: #667eea;
+            --personel-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --transition-speed: 0.5s;
         }
 
@@ -53,7 +53,7 @@
         .circle-2 {
             width: 300px;
             height: 300px;
-            background: var(--personel-color);
+            background: #764ba2;
             bottom: -5%;
             right: -5%;
         }
@@ -71,11 +71,18 @@
             margin-bottom: 25px;
         }
 
-            .page-header-section img {
-                height: 90px;
-                filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
-                margin-bottom: 15px;
-            }
+        .header-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
 
         .toggle-wrapper {
             background: rgba(255, 255, 255, 0.1);
@@ -130,6 +137,7 @@
             transform: scale(0.8) translateY(20px);
             pointer-events: none;
             filter: blur(10px);
+            overflow-y: auto;
         }
 
             .login-card.active {
@@ -162,32 +170,37 @@
             transition: 0.3s;
             margin-top: 10px;
             cursor: pointer;
+            background: var(--yetkili-grad);
         }
 
             .btn-custom:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                color: white;
             }
-
-        .yetkili-theme {
-            background: var(--yetkili-grad);
-        }
-
-        .personel-theme {
-            background: var(--personel-grad);
-        }
 
         .toggle-btn.active-tab {
             color: #1a1a2e !important;
         }
 
-        /* Form temizleme için */
         .login-card:not(.active) input {
             visibility: hidden;
         }
 
         .login-card.active input {
             visibility: visible;
+        }
+
+        .register-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .register-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -199,9 +212,11 @@
     <div class="main-container">
 
         <div class="page-header-section">
-            <img src="~/images/gazi-logo.png" alt="Gazi Logo">
-            <h2 class="fw-bold">Hastane Nöbet Sistemi</h2>
-            <p class="small text-white-50">Lütfen giriş yapmak için kullanıcı tipinizi seçiniz</p>
+            <div class="header-icon">
+                <i class="fa-solid fa-laptop-medical fa-2x text-white"></i>
+            </div>
+            <h2 class="fw-bold">Nöbet Sistemi</h2>
+            <p class="small text-white-50">Giriş yapmak için kullanıcı tipinizi seçiniz</p>
         </div>
 
         <div class="toggle-wrapper">
@@ -215,7 +230,7 @@
             <!-- YETKİLİ GİRİŞİ -->
             <div class="login-card active" id="card-yetkili">
                 <div class="text-center mb-4">
-                    <div class="display-6 mb-2"><i class="fa-solid fa-user-shield text-primary"></i></div>
+                    <div class="display-6 mb-2"><i class="fa-solid fa-user-shield" style="color:#667eea;"></i></div>
                     <h4 class="fw-bold">Yetkili Girişi</h4>
                 </div>
                 <form asp-action="Login" method="post" id="yetkili-form" autocomplete="off">
@@ -238,9 +253,11 @@
                                autocomplete="new-password"
                                required>
                     </div>
-                    <button type="submit" class="btn-custom yetkili-theme">GİRİŞ YAP</button>
-                    <div class="mt-4 p-3 bg-light rounded-3 small">
-                        <strong>Demo:</strong> admin@hastane.com / Admin123!
+                    <button type="submit" class="btn-custom">GİRİŞ YAP</button>
+                    <div class="text-center mt-4">
+                        <a asp-action="Register" class="register-link small">
+                            <i class="fa-solid fa-user-plus me-1"></i> Hesabınız yok mu? Kayıt Ol
+                        </a>
                     </div>
                 </form>
             </div>
@@ -248,7 +265,7 @@
             <!-- PERSONEL GİRİŞİ -->
             <div class="login-card" id="card-personel">
                 <div class="text-center mb-4">
-                    <div class="display-6 mb-2"><i class="fa-solid fa-user-doctor text-success"></i></div>
+                    <div class="display-6 mb-2"><i class="fa-solid fa-user-doctor" style="color:#667eea;"></i></div>
                     <h4 class="fw-bold">Personel Girişi</h4>
                 </div>
                 <form asp-action="Login" method="post" id="personel-form" autocomplete="off">
@@ -271,11 +288,12 @@
                                autocomplete="new-password"
                                required>
                     </div>
-                    <button type="submit" class="btn-custom personel-theme">GİRİŞ YAP</button>
+                    <button type="submit" class="btn-custom">GİRİŞ YAP</button>
                     <div class="text-center mt-4">
-                        <a asp-action="Register" class="text-decoration-none small fw-bold text-success">
-                            Hesabınız yok mu? Hemen Kayıt Ol
-                        </a>
+                        <p class="small text-muted mb-0">
+                            <i class="fa-solid fa-circle-info me-1"></i>
+                            Hesabınız yetkili tarafından oluşturulur.
+                        </p>
                     </div>
                 </form>
             </div>
@@ -284,7 +302,6 @@
     </div>
 
     <script>
-        // Sayfa yüklendiğinde formları temizle
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('input[type="email"], input[type="password"]').forEach(input => {
                 input.value = '';
@@ -300,7 +317,6 @@
             const c1 = document.getElementById('c1');
             const c2 = document.getElementById('c2');
 
-            // Formlardaki değerleri temizle
             const inactiveCard = type === 'yetkili' ? cardPersonel : cardYetkili;
             inactiveCard.querySelectorAll('input[type="email"], input[type="password"]').forEach(input => {
                 input.value = '';
@@ -312,7 +328,6 @@
                 cardPersonel.classList.remove('active');
                 btnYetkili.classList.add('active-tab');
                 btnPersonel.classList.remove('active-tab');
-
                 c1.style.transform = 'translate(0, 0)';
                 c2.style.transform = 'translate(0, 0)';
             } else {
@@ -321,7 +336,6 @@
                 cardPersonel.classList.add('active');
                 btnYetkili.classList.remove('active-tab');
                 btnPersonel.classList.add('active-tab');
-
                 c1.style.transform = 'translate(50px, 50px)';
                 c2.style.transform = 'translate(-50px, -50px)';
             }

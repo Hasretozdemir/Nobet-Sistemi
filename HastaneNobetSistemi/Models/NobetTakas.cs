@@ -25,6 +25,12 @@ namespace HastaneNobetSistemi.Models
         [ForeignKey("HedefPersonelId")]
         public Personel? HedefPersonel { get; set; }
 
+        // Takası kabul eden personel
+        [Display(Name = "Kabul Eden Personel")]
+        public int? KabulEdenPersonelId { get; set; }
+        [ForeignKey("KabulEdenPersonelId")]
+        public Personel? KabulEdenPersonel { get; set; }
+
         // Karşı taraf tarafından seçilen nöbet (kabul aşamasında)
         [Display(Name = "Karşılık Nöbet")]
         public int? KarsilikNobetId { get; set; }

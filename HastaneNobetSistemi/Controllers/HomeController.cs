@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using HastaneNobetSistemi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HastaneNobetSistemi.Controllers
@@ -13,8 +14,38 @@ namespace HastaneNobetSistemi.Controllers
             _logger = logger;
         }
 
+        [Authorize(Roles = "Yetkili")]
         public IActionResult Index()
         {
+            return View();
+        }
+
+        [Authorize]
+        public IActionResult Iletisim()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public IActionResult Iletisim(string Konu, string Kategori, string Mesaj)
+        {
+            if (string.IsNullOrWhiteSpace(Konu) || string.IsNullOrWhiteSpace(Mesaj))
+            {
+                TempData["ErrorMessage"] = "Konu ve mesaj alanları zorunludur.";
+                return View();
+            }
+
+            var gonderen = User.Identity?.Name ?? "Bilinmeyen";
+            var mailKonu = $"[Nöbet Sistemi - {Kategori}] {Konu}";
+            var mailBody = $"Gönderen: {gonderen}\nKategori: {Kategori}\nKonu: {Konu}\n\n{Mesaj}";
+
+            // mailto linki ile kullanıcının mail uygulamasını aç
+            var mailtoLink = $"mailto:hasretozdemir288@gmail.com?subject={Uri.EscapeDataString(mailKonu)}&body={Uri.EscapeDataString(mailBody)}";
+
+            TempData["MailtoLink"] = mailtoLink;
+            TempData["SuccessMessage"] = "Mesajınız hazırlandı! Mail uygulamanız açılacaktır.";
             return View();
         }
 

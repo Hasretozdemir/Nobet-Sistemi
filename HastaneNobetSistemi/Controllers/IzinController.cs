@@ -158,18 +158,24 @@ public class IzinController : Controller
     [Authorize(Roles = "Yetkili")]
     public async Task<IActionResult> YonetimPaneli(string durum = "Beklemede")
     {
+        var yetkiliUserId = (await _userManager.GetUserAsync(User))!.Id;
+        var personelIds = await _context.Personeller
+            .Where(p => p.YetkiliUserId == yetkiliUserId)
+            .Select(p => p.Id)
+            .ToListAsync();
+
         var talepler = await _context.IzinTalepleri
             .Include(i => i.Personel)
-            .Where(i => i.Durum == durum)
+            .Where(i => i.Durum == durum && personelIds.Contains(i.PersonelId))
             .OrderByDescending(i => i.TalepTarihi)
             .ToListAsync();
 
         ViewBag.SeciliDurum = durum;
 
         // İstatistikler
-        ViewBag.BekleyenSayisi = await _context.IzinTalepleri.CountAsync(i => i.Durum == "Beklemede");
-        ViewBag.OnaylananSayisi = await _context.IzinTalepleri.CountAsync(i => i.Durum == "Onaylandi");
-        ViewBag.RedSayisi = await _context.IzinTalepleri.CountAsync(i => i.Durum == "Reddedildi");
+        ViewBag.BekleyenSayisi = await _context.IzinTalepleri.CountAsync(i => i.Durum == "Beklemede" && personelIds.Contains(i.PersonelId));
+        ViewBag.OnaylananSayisi = await _context.IzinTalepleri.CountAsync(i => i.Durum == "Onaylandi" && personelIds.Contains(i.PersonelId));
+        ViewBag.RedSayisi = await _context.IzinTalepleri.CountAsync(i => i.Durum == "Reddedildi" && personelIds.Contains(i.PersonelId));
 
         return View(talepler);
     }
@@ -178,9 +184,15 @@ public class IzinController : Controller
     [Authorize(Roles = "Yetkili")]
     public async Task<IActionResult> TalepDetay(int id)
     {
+        var yetkiliUserId = (await _userManager.GetUserAsync(User))!.Id;
+        var personelIds = await _context.Personeller
+            .Where(p => p.YetkiliUserId == yetkiliUserId)
+            .Select(p => p.Id)
+            .ToListAsync();
+
         var talep = await _context.IzinTalepleri
             .Include(i => i.Personel)
-            .FirstOrDefaultAsync(i => i.Id == id);
+            .FirstOrDefaultAsync(i => i.Id == id && personelIds.Contains(i.PersonelId));
 
         if (talep == null)
         {
@@ -405,10 +417,17 @@ public class IzinController : Controller
         var ayBas = new DateTime(seciliYil, seciliAy, 1);
         var aySon = ayBas.AddMonths(1).AddDays(-1);
 
+        var yetkiliUserId = (await _userManager.GetUserAsync(User))!.Id;
+        var personelIds = await _context.Personeller
+            .Where(p => p.YetkiliUserId == yetkiliUserId)
+            .Select(p => p.Id)
+            .ToListAsync();
+
         // Onaylanan izinler
         var izinler = await _context.IzinTalepleri
             .Include(i => i.Personel)
             .Where(i => i.Durum == "Onaylandi"
+                     && personelIds.Contains(i.PersonelId)
                      && ((i.BaslangicTarihi >= ayBas && i.BaslangicTarihi <= aySon)
                       || (i.BitisTarihi >= ayBas && i.BitisTarihi <= aySon)
                       || (i.BaslangicTarihi <= ayBas && i.BitisTarihi >= aySon)))

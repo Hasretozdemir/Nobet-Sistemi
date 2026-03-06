@@ -202,6 +202,11 @@
                         <i class="fa-solid fa-file-invoice"></i> <span class="sidebar-text">Talepler</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Iletisim">
+                        <i class="fa-solid fa-envelope"></i> <span class="sidebar-text">İletişim</span>
+                    </a>
+                </li>
             }
             else if (User.IsInRole("Personel"))
             {
@@ -230,6 +235,11 @@
                         <i class="fa-solid fa-clock-rotate-left"></i> <span class="sidebar-text">Geçmişim</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Iletisim">
+                        <i class="fa-solid fa-envelope"></i> <span class="sidebar-text">İletişim</span>
+                    </a>
+                </li>
             }
 
             <li class="nav-item mt-4">
@@ -254,9 +264,32 @@
     <div id="page-content-wrapper">
         @if (SignInManager.IsSignedIn(User))
         {
+            string? isletmeAdi = null;
+            try
+            {
+                var currentUser = await UserManager.GetUserAsync(User);
+                isletmeAdi = currentUser?.IsletmeAdi;
+
+                if (string.IsNullOrEmpty(isletmeAdi) && User.IsInRole("Personel"))
+                {
+                    var yetkiliUsers = await UserManager.GetUsersInRoleAsync("Yetkili");
+                    var yetkili = yetkiliUsers.FirstOrDefault(u => !string.IsNullOrEmpty(u.IsletmeAdi));
+                    isletmeAdi = yetkili?.IsletmeAdi;
+                }
+            }
+            catch { }
+
             <nav class="navbar navbar-expand navbar-light bg-white px-4 py-3 shadow-sm mb-4">
                 <div class="container-fluid">
-                    <span class="fw-bold text-dark fs-5">@ViewData["Title"]</span>
+                    <div class="d-flex align-items-center">
+                        <span class="fw-bold text-dark fs-5">@ViewData["Title"]</span>
+                        @if (!string.IsNullOrEmpty(isletmeAdi))
+                        {
+                            <span class="ms-3 badge rounded-pill px-3 py-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 0.75rem;">
+                                <i class="fa-solid fa-building me-1"></i>@isletmeAdi
+                            </span>
+                        }
+                    </div>
                     <div class="ms-auto d-flex align-items-center">
                         <div class="dropdown">
                             <button class="btn btn-light rounded-pill dropdown-toggle px-3 shadow-sm border-0" data-bs-toggle="dropdown">

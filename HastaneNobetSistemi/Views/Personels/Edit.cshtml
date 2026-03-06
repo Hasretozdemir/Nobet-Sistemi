@@ -90,6 +90,90 @@
                                     <span asp-validation-for="AdSoyad" class="text-danger small"></span>
                                 </div>
                             </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating shadow-sm rounded-3">
+                                    <input asp-for="Unvan" class="form-control border-0 px-4" placeholder="Ünvan" />
+                                    <label asp-for="Unvan" class="text-muted"><i class="fa-solid fa-briefcase me-2 text-primary"></i>Ünvan (Görev)</label>
+                                    <span asp-validation-for="Unvan" class="text-danger small"></span>
+                                </div>
+                                <small class="text-muted d-block mt-1">Personelin ne olarak çalıştığı (Mühendis, Tekniker vb.)</small>
+                            </div>
+                        </div>
+
+                        <!-- Ücret Hesaplama Tipi -->
+                        <div class="section-title mb-4 mt-4">
+                            <span class="badge bg-success px-3 py-2 rounded-pill">Nöbet Ücret Ayarları</span>
+                            <hr class="text-muted opacity-25">
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <div class="d-flex gap-3">
+                                    <div class="form-check form-check-inline p-3 rounded-4 border flex-fill text-center shadow-sm" style="cursor:pointer;" id="editNormalBox">
+                                        <input class="form-check-input" type="radio" asp-for="UcretTipi" value="Normal" id="editUcretNormal" onclick="toggleEditUcretTipi()">
+                                        <label class="form-check-label fw-bold d-block" for="editUcretNormal" style="cursor:pointer;">
+                                            <i class="fa-solid fa-money-bill-wave text-success d-block fs-4 mb-1"></i>
+                                            Normal Nöbet
+                                        </label>
+                                        <small class="text-muted d-block">Tek ücret / nöbet</small>
+                                    </div>
+                                    <div class="form-check form-check-inline p-3 rounded-4 border flex-fill text-center shadow-sm" style="cursor:pointer;" id="editIcapBox">
+                                        <input class="form-check-input" type="radio" asp-for="UcretTipi" value="IcapUzaktan" id="editUcretIcap" onclick="toggleEditUcretTipi()">
+                                        <label class="form-check-label fw-bold d-block" for="editUcretIcap" style="cursor:pointer;">
+                                            <i class="fa-solid fa-phone-volume text-info d-block fs-4 mb-1"></i>
+                                            İcap + Uzaktan
+                                        </label>
+                                        <small class="text-muted d-block">Saatlik hesaplama</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Normal Ücret -->
+                        <div id="editNormalUcretAlani" class="row g-4 mb-4">
+                            <div class="col-md-12">
+                                <div class="form-floating shadow-sm rounded-3">
+                                    <input asp-for="NobetUcreti" class="form-control border-0 px-4" placeholder="Nöbet Ücreti" type="number" step="0.01" min="0" />
+                                    <label asp-for="NobetUcreti" class="text-muted"><i class="fa-solid fa-turkish-lira-sign me-2 text-primary"></i>Nöbet Başına Ücret (₺)</label>
+                                    <span asp-validation-for="NobetUcreti" class="text-danger small"></span>
+                                </div>
+                                <small class="text-muted d-block mt-1">Her bir nöbet karşılığında ödenecek tutar</small>
+                            </div>
+                        </div>
+
+                        <!-- İcap + Uzaktan Ücret -->
+                        <div id="editIcapUzaktanAlani" style="display:none;">
+                            <div class="alert alert-info border-0 rounded-3 py-2 px-3 small mb-3">
+                                <i class="fa-solid fa-calculator me-1"></i>
+                                <strong>Hesaplama:</strong> (İcap Saatlik × İcap Saat) + (Uzaktan Saatlik × Uzaktan Saat) = Nöbet Başına Ücret
+                            </div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-floating shadow-sm rounded-3">
+                                        <input asp-for="IcapSaatlikUcret" class="form-control border-0 px-4" type="number" step="0.01" min="0" placeholder="İcap Saatlik" />
+                                        <label asp-for="IcapSaatlikUcret" class="text-muted"><i class="fa-solid fa-phone-volume me-2 text-info"></i>İcap Saatlik Ücreti (₺)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating shadow-sm rounded-3">
+                                        <input asp-for="IcapSaat" class="form-control border-0 px-4" type="number" step="0.5" min="0" max="24" placeholder="İcap Saat" />
+                                        <label asp-for="IcapSaat" class="text-muted"><i class="fa-solid fa-clock me-2 text-info"></i>İcap Süresi (Saat)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating shadow-sm rounded-3">
+                                        <input asp-for="UzaktanSaatlikUcret" class="form-control border-0 px-4" type="number" step="0.01" min="0" placeholder="Uzaktan Saatlik" />
+                                        <label asp-for="UzaktanSaatlikUcret" class="text-muted"><i class="fa-solid fa-laptop me-2 text-warning"></i>Uzaktan Saatlik Ücreti (₺)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating shadow-sm rounded-3">
+                                        <input asp-for="UzaktanSaat" class="form-control border-0 px-4" type="number" step="0.5" min="0" max="24" placeholder="Uzaktan Saat" />
+                                        <label asp-for="UzaktanSaat" class="text-muted"><i class="fa-solid fa-clock me-2 text-warning"></i>Uzaktan Süresi (Saat)</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Email ve Şifre Güncelleme -->
@@ -208,6 +292,19 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        function toggleEditUcretTipi() {
+            var isNormal = document.getElementById('editUcretNormal').checked;
+            document.getElementById('editNormalUcretAlani').style.display = isNormal ? 'block' : 'none';
+            document.getElementById('editIcapUzaktanAlani').style.display = isNormal ? 'none' : 'block';
+            document.getElementById('editNormalBox').classList.toggle('border-success', isNormal);
+            document.getElementById('editNormalBox').style.background = isNormal ? '#f0fdf4' : '';
+            document.getElementById('editIcapBox').classList.toggle('border-info', !isNormal);
+            document.getElementById('editIcapBox').style.background = !isNormal ? '#e0f2fe' : '';
+        }
+        document.addEventListener('DOMContentLoaded', toggleEditUcretTipi);
+    </script>
 
     <style>
         .transition-all {

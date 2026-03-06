@@ -112,8 +112,8 @@ Gazi Üniversitesi Saðlýk Araþtýrma ve Uygulama Merkezi (Gazi Hastanesi) Bilgi Ýþ
 
 1. **Projeyi klonlayýn:**
    ```bash
-   git clone https://github.com/<kullanici-adi>/HastaneNobetSistemi.git
-   cd HastaneNobetSistemi
+   git clone https://github.com/Hasretozdemir/Nobet-Sistemi.git
+   cd Nobet-Sistemi
    ```
 
 2. **Veritabaný baðlantý dizesini ayarlayýn:**

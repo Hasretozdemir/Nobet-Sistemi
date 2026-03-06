@@ -4,52 +4,86 @@
     ViewData["Title"] = "Yeni Takas Teklifi";
 }
 
-<div class="container mt-4 mb-5">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-success bg-opacity-10 border-0 py-3">
-                    <h4 class="mb-0">
-                        <i class="fa-solid fa-plus-circle me-2"></i>Yeni Nöbet Takas Teklifi
-                    </h4>
+        <div class="col-xl-7 col-lg-9">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+
+                <div class="card-header bg-dark py-4 px-4 position-relative border-0">
+                    <div class="d-flex align-items-center justify-content-between position-relative" style="z-index: 2;">
+                        <div>
+                            <h3 class="text-white mb-0 fw-bold">
+                                <i class="fa-solid fa-plus-circle me-2 text-success"></i>Yeni Takas Teklifi
+                            </h3>
+                            <p class="text-white-50 small mb-0 mt-1">Nöbetinizi başka bir personel ile takas edin.</p>
+                        </div>
+                        <div class="text-white-50 d-none d-sm-block">
+                            <i class="fa-solid fa-arrows-rotate fa-3x opacity-25"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body p-4">
+
+                <div class="card-body p-4 p-md-5 bg-light">
+
+                    <div class="alert alert-info d-flex align-items-start mb-4 shadow-sm border-0 rounded-3">
+                        <i class="fa-solid fa-lightbulb me-3 fs-4 mt-1"></i>
+                        <div>
+                            <strong>Nasıl Çalışır?</strong><br />
+                            <span class="text-muted">Takas teklifi gönderdiğinizde karşı taraf onaylarsa kendi aranızda anlaşmış olursunuz. Resmi nöbet listesi değişmez.</span>
+                        </div>
+                    </div>
+
                     <form asp-action="Create" method="post">
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fa-solid fa-calendar-alt text-primary me-2"></i>Takas Etmek İstediğiniz Nöbet
-                            </label>
-                            <select asp-for="TeklifEdilenNobetId" class="form-select" asp-items="ViewBag.GelecekNobetlerim" required>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 rounded-3 shadow-sm mb-4"></div>
+
+                        <div class="section-title mb-4">
+                            <span class="badge bg-primary px-3 py-2 rounded-pill">1. Takas Edilecek Nöbet</span>
+                            <hr class="text-muted opacity-25">
+                        </div>
+
+                        <div class="form-floating shadow-sm rounded-3 mb-4">
+                            <select asp-for="TeklifEdilenNobetId" class="form-select border-0 px-4" asp-items="ViewBag.GelecekNobetlerim" required>
                                 <option value="">-- Nöbet Seçiniz --</option>
                             </select>
-                            <small class="text-muted">Sadece gelecekteki nöbetlerinizi takas edebilirsiniz</small>
+                            <label class="text-muted"><i class="fa-solid fa-calendar-day me-2 text-primary"></i>Takas Etmek İstediğiniz Nöbet</label>
+                        </div>
+                        <small class="text-muted d-block mb-4 ms-1"><i class="fa-solid fa-circle-info me-1"></i>Sadece gelecekteki nöbetleriniz listelenir</small>
+
+                        <div class="section-title mb-4">
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">2. Hedef Personel (İsteğe Bağlı)</span>
+                            <hr class="text-muted opacity-25">
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fa-solid fa-user text-warning me-2"></i>Hedef Personel (Opsiyonel)
-                            </label>
-                            <select asp-for="HedefPersonelId" class="form-select" asp-items="ViewBag.DigerPersoneller">
+                        <div class="form-floating shadow-sm rounded-3 mb-4">
+                            <select asp-for="HedefPersonelId" class="form-select border-0 px-4" asp-items="ViewBag.DigerPersoneller">
                                 <option value="">-- Herkese Açık Teklif --</option>
                             </select>
-                            <small class="text-muted">Boş bırakırsanız tüm personeller teklifinizi görebilir</small>
+                            <label class="text-muted"><i class="fa-solid fa-user me-2 text-warning"></i>Hedef Personel</label>
+                        </div>
+                        <small class="text-muted d-block mb-4 ms-1"><i class="fa-solid fa-circle-info me-1"></i>Boş bırakırsanız tüm personeller teklifinizi görebilir</small>
+
+                        <div class="section-title mb-4">
+                            <span class="badge bg-info px-3 py-2 rounded-pill">3. Açıklama</span>
+                            <hr class="text-muted opacity-25">
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="fa-solid fa-comment-dots text-info me-2"></i>Takas Nedeni
-                            </label>
-                            <textarea asp-for="Aciklama" class="form-control" rows="4"
-                                      placeholder="Örn: Aile etkinliği, sağlık durumu, önemli randevu..." required></textarea>
+                        <div class="form-floating shadow-sm rounded-3 mb-4">
+                            <textarea asp-for="Aciklama" class="form-control border-0 px-4" placeholder="Açıklama" style="height: 100px" required></textarea>
+                            <label class="text-muted"><i class="fa-solid fa-comment-dots me-2 text-info"></i>Takas Nedeni</label>
                         </div>
+                        <small class="text-muted d-block mb-4 ms-1"><i class="fa-solid fa-circle-info me-1"></i>Örn: Aile etkinliği, sağlık durumu, önemli randevu...</small>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fa-solid fa-paper-plane me-2"></i>Teklif Gönder
-                            </button>
-                            <a asp-action="Index" class="btn btn-outline-secondary">
-                                <i class="fa-solid fa-arrow-left me-2"></i>Geri Dön
-                            </a>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-4 order-2 order-md-1">
+                                <a asp-action="Index" class="btn btn-outline-dark w-100 py-3 rounded-pill fw-bold transition-all">
+                                    <i class="fa-solid fa-arrow-left me-2"></i>Geri Dön
+                                </a>
+                            </div>
+                            <div class="col-md-8 order-1 order-md-2">
+                                <button type="submit" class="btn btn-success w-100 py-3 rounded-pill fw-bold shadow transition-all">
+                                    <i class="fa-solid fa-paper-plane me-2"></i>Teklif Gönder
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -57,3 +91,16 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <style>
+        .transition-all { transition: all 0.3s ease; }
+        .transition-all:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+        .form-control:focus, .form-select:focus { box-shadow: none; border: 1px solid #0d6efd !important; }
+        .form-floating > .form-control, .form-floating > .form-select { border-bottom: 2px solid transparent; }
+        .form-floating > .form-control:focus, .form-floating > .form-select:focus { border-bottom: 2px solid #0d6efd; }
+    </style>
+}

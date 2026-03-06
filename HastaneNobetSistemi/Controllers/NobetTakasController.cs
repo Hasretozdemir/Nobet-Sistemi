@@ -27,29 +27,44 @@ public class NobetTakasController : Controller
         if (user?.PersonelId == null) return RedirectToAction("Login", "Account");
 
         var personelId = user.PersonelId.Value;
+        var personel = await _context.Personeller.FindAsync(personelId);
 
         // Kendi tekliflerim
         var benimTekliflerim = await _context.NobetTakaslar
-            .Include(t => t.TeklifEdilenNobet)
+            .Include(t => t.TeklifEdilenNobet).ThenInclude(n => n.Personel)
+            .Include(t => t.TeklifEdenPersonel)
             .Include(t => t.HedefPersonel)
-            .Include(t => t.KarsilikNobet)
+            .Include(t => t.KarsilikNobet).ThenInclude(n => n.Personel)
             .Where(t => t.TeklifEdenPersonelId == personelId)
             .OrderByDescending(t => t.OlusturmaTarihi)
             .ToListAsync();
 
-        // Bana gelen teklifler
+        // Bana gelen teklifler (hedef ben veya herkese açýk, beklemede olanlar)
         var banaGelenTeklifler = await _context.NobetTakaslar
             .Include(t => t.TeklifEdenPersonel)
-            .Include(t => t.TeklifEdilenNobet)
-            .Include(t => t.KarsilikNobet)
-            .Where(t => (t.HedefPersonelId == personelId || t.HedefPersonelId == null) 
-                     && t.TeklifEdenPersonelId != personelId 
+            .Include(t => t.TeklifEdilenNobet).ThenInclude(n => n.Personel)
+            .Include(t => t.KarsilikNobet).ThenInclude(n => n.Personel)
+            .Where(t => (t.HedefPersonelId == personelId || t.HedefPersonelId == null)
+                     && t.TeklifEdenPersonelId != personelId
                      && t.Durum == "Beklemede")
             .OrderByDescending(t => t.OlusturmaTarihi)
             .ToListAsync();
 
+        // Onaylanmýþ takaslarým (hem teklif eden hem kabul eden olarak)
+        var onaylananTakaslarim = await _context.NobetTakaslar
+            .Include(t => t.TeklifEdenPersonel)
+            .Include(t => t.TeklifEdilenNobet)
+            .Include(t => t.KarsilikNobet)
+            .Include(t => t.HedefPersonel)
+            .Where(t => t.Durum == "Onaylandi"
+                     && (t.TeklifEdenPersonelId == personelId || t.KabulEdenPersonelId == personelId))
+            .OrderByDescending(t => t.YanitTarihi)
+            .ToListAsync();
+
+        ViewBag.Personel = personel;
         ViewBag.BenimTekliflerim = benimTekliflerim;
         ViewBag.BanaGelenTeklifler = banaGelenTeklifler;
+        ViewBag.OnaylananTakaslarim = onaylananTakaslarim;
 
         return View();
     }
@@ -62,6 +77,10 @@ public class NobetTakasController : Controller
 
         var personelId = user.PersonelId.Value;
 
+        // Personelin hangi iþletmeye ait olduðunu bul
+        var personel = await _context.Personeller.FindAsync(personelId);
+        var yetkiliUserId = personel?.YetkiliUserId;
+
         // Gelecekteki nöbetlerimi getir
         var gelecekNobetlerim = await _context.Nobetler
             .Where(n => n.PersonelId == personelId && n.Tarih > DateTime.Today)
@@ -69,13 +88,14 @@ public class NobetTakasController : Controller
             .ToListAsync();
 
         ViewBag.GelecekNobetlerim = new SelectList(
-            gelecekNobetlerim.Select(n => new { 
-                n.Id, 
-                Display = $"{n.Tarih:dd MMMM yyyy dddd} - {n.NobetTipi}" 
+            gelecekNobetlerim.Select(n => new {
+                n.Id,
+                Display = $"{n.Tarih:dd MMMM yyyy dddd} - {n.NobetTipi}"
             }), "Id", "Display");
 
+        // Sadece ayný iþletmedeki diðer personelleri göster
         var digerPersoneller = await _context.Personeller
-            .Where(p => p.Id != personelId && p.AktifMi == true)
+            .Where(p => p.Id != personelId && p.AktifMi == true && p.YetkiliUserId == yetkiliUserId)
             .OrderBy(p => p.AdSoyad)
             .ToListAsync();
 
@@ -97,7 +117,7 @@ public class NobetTakasController : Controller
 
         // Ayný nöbet için aktif takas var mý kontrol et
         var mevcutTakas = await _context.NobetTakaslar
-            .AnyAsync(t => t.TeklifEdilenNobetId == model.TeklifEdilenNobetId 
+            .AnyAsync(t => t.TeklifEdilenNobetId == model.TeklifEdilenNobetId
                         && t.Durum == "Beklemede");
 
         if (mevcutTakas)
@@ -113,37 +133,40 @@ public class NobetTakasController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // Takas Teklifini Kabul Et
+    // Takas Teklifini Kabul Et - GET
     public async Task<IActionResult> Accept(int id)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user?.PersonelId == null) return RedirectToAction("Login", "Account");
 
         var takas = await _context.NobetTakaslar
+            .Include(t => t.TeklifEdenPersonel)
             .Include(t => t.TeklifEdilenNobet)
             .FirstOrDefaultAsync(t => t.Id == id);
 
         if (takas == null || takas.Durum != "Beklemede")
-            return NotFound();
+        {
+            TempData["ErrorMessage"] = "Bu takas teklifi artýk geçerli deðil.";
+            return RedirectToAction(nameof(Index));
+        }
 
-        // Karþýlýk verilecek nöbetleri getir
+        // Karþýlýk verilecek nöbetleri getir (tüm gelecek nöbetler - tip kýsýtlamasý yok)
         var benimGelecekNobetlerim = await _context.Nobetler
-            .Where(n => n.PersonelId == user.PersonelId 
-                     && n.Tarih > DateTime.Today
-                     && n.NobetTipi == takas.TeklifEdilenNobet.NobetTipi) // Ayný tip nöbet
+            .Where(n => n.PersonelId == user.PersonelId
+                     && n.Tarih > DateTime.Today)
             .OrderBy(n => n.Tarih)
             .ToListAsync();
 
         ViewBag.KarsilikNobetler = new SelectList(
-            benimGelecekNobetlerim.Select(n => new { 
-                n.Id, 
-                Display = $"{n.Tarih:dd MMMM yyyy dddd}" 
+            benimGelecekNobetlerim.Select(n => new {
+                n.Id,
+                Display = $"{n.Tarih:dd MMMM yyyy dddd} - {n.NobetTipi}"
             }), "Id", "Display");
 
-        ViewBag.Takas = takas;
         return View(takas);
     }
 
+    // Takas Teklifini Kabul Et - POST
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AcceptConfirm(int id, int karsilikNobetId)
@@ -153,45 +176,48 @@ public class NobetTakasController : Controller
 
         var takas = await _context.NobetTakaslar
             .Include(t => t.TeklifEdilenNobet)
+            .Include(t => t.TeklifEdenPersonel)
             .FirstOrDefaultAsync(t => t.Id == id);
 
         if (takas == null || takas.Durum != "Beklemede")
-            return NotFound();
+        {
+            TempData["ErrorMessage"] = "Bu takas teklifi artýk geçerli deðil.";
+            return RedirectToAction(nameof(Index));
+        }
 
         var karsilikNobet = await _context.Nobetler.FindAsync(karsilikNobetId);
         if (karsilikNobet == null || karsilikNobet.PersonelId != user.PersonelId)
-            return BadRequest();
+        {
+            TempData["ErrorMessage"] = "Seçilen nöbet geçersiz.";
+            return RedirectToAction(nameof(Index));
+        }
 
-        // TAKAS ÝÞLEMÝ
-        var teklifEdilenNobet = takas.TeklifEdilenNobet;
-        
-        var eskiTeklifPersonel = teklifEdilenNobet.PersonelId;
-        var eskiKarsilikPersonel = karsilikNobet.PersonelId;
-
-        teklifEdilenNobet.PersonelId = eskiKarsilikPersonel;
-        karsilikNobet.PersonelId = eskiTeklifPersonel;
-
+        // ? NÖBET LÝSTESÝNÝ DEÐÝÞTÝRME! Sadece takas kaydýný güncelle
         takas.KarsilikNobetId = karsilikNobetId;
+        takas.KabulEdenPersonelId = user.PersonelId.Value;
         takas.Durum = "Onaylandi";
         takas.YanitTarihi = DateTime.Now;
 
         await _context.SaveChangesAsync();
 
-        TempData["SuccessMessage"] = "Takas baþarýyla tamamlandý! Nöbetler deðiþtirildi.";
+        TempData["SuccessMessage"] = "Takas anlaþmasý tamamlandý! Nöbet günlerinde birbirinizin yerine nöbet tutacaksýnýz.";
         return RedirectToAction(nameof(Index));
     }
 
     // Takas Teklifini Reddet
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Reject(int id, string redNedeni)
+    public async Task<IActionResult> Reject(int id, string? redNedeni)
     {
         var takas = await _context.NobetTakaslar.FindAsync(id);
         if (takas == null || takas.Durum != "Beklemede")
-            return NotFound();
+        {
+            TempData["ErrorMessage"] = "Bu takas teklifi artýk geçerli deðil.";
+            return RedirectToAction(nameof(Index));
+        }
 
         takas.Durum = "Reddedildi";
-        takas.RedNedeni = redNedeni;
+        takas.RedNedeni = redNedeni ?? "Neden belirtilmedi";
         takas.YanitTarihi = DateTime.Now;
 
         await _context.SaveChangesAsync();
@@ -209,7 +235,10 @@ public class NobetTakasController : Controller
         var takas = await _context.NobetTakaslar.FindAsync(id);
 
         if (takas == null || takas.TeklifEdenPersonelId != user.PersonelId)
-            return NotFound();
+        {
+            TempData["ErrorMessage"] = "Takas teklifi bulunamadý.";
+            return RedirectToAction(nameof(Index));
+        }
 
         if (takas.Durum != "Beklemede")
         {

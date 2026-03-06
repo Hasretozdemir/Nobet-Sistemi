@@ -79,6 +79,55 @@ public class AccountController : Controller
         return View(model);
     }
 
+    // GET: /Account/Register
+    [AllowAnonymous]
+    public IActionResult Register()
+    {
+        return View();
+    }
+
+    // POST: /Account/Register
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(YetkiliKayitViewModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Email", "Bu e-posta adresi zaten kullanılıyor.");
+                return View(model);
+            }
+
+            var user = new AppUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                AdSoyad = model.AdSoyad,
+                IsletmeAdi = model.IsletmeAdi,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "Yetkili");
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToAction("Index", "Nobets");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+        }
+
+        return View(model);
+    }
+
     // POST: /Account/Logout
     [HttpPost]
     [ValidateAntiForgeryToken]

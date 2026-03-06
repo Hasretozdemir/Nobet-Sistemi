@@ -1,0 +1,232 @@
+@model HastaneNobetSistemi.ViewModels.YetkiliKayitViewModel
+
+@{
+    ViewData["Title"] = "Yetkili Kayýt";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Nöbet Sistemi</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .circle-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--primary-color);
+            top: -10%;
+            left: -10%;
+        }
+
+        .circle-2 {
+            width: 300px;
+            height: 300px;
+            background: #764ba2;
+            bottom: -5%;
+            right: -5%;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .page-header-section {
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .header-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .form-control {
+            border: 1px solid #eee;
+            padding: 12px 15px;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+            .form-control:focus {
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                border-color: var(--primary-color);
+                outline: none;
+            }
+
+        .btn-register {
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            width: 100%;
+            transition: 0.3s;
+            cursor: pointer;
+            background: var(--primary-grad);
+        }
+
+            .btn-register:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                color: white;
+            }
+
+        .back-link {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+            .back-link:hover {
+                color: white;
+            }
+
+        .field-validation-error {
+            color: #dc3545;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .validation-summary-errors ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .validation-summary-errors li {
+            color: #dc3545;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-circle circle-1"></div>
+    <div class="bg-circle circle-2"></div>
+
+    <div class="main-container">
+
+        <div class="page-header-section">
+            <div class="header-icon">
+                <i class="fa-solid fa-user-plus fa-2x text-white"></i>
+            </div>
+            <h2 class="fw-bold">Yetkili Kayýt</h2>
+            <p class="small text-white-50">Ýþletmeniz için yeni bir yetkili hesabý oluþturun</p>
+        </div>
+
+        <div class="register-card">
+            <form asp-action="Register" method="post" autocomplete="off">
+                <div asp-validation-summary="ModelOnly" class="mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">
+                        <i class="fa-solid fa-user me-1"></i> Ad Soyad
+                    </label>
+                    <input asp-for="AdSoyad" class="form-control" placeholder="Adýnýz Soyadýnýz" autocomplete="off" />
+                    <span asp-validation-for="AdSoyad"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">
+                        <i class="fa-solid fa-building me-1"></i> Ýþletme Adý
+                    </label>
+                    <input asp-for="IsletmeAdi" class="form-control" placeholder="Örn: Gazi Hastanesi Bilgi Ýþlem" autocomplete="off" />
+                    <span asp-validation-for="IsletmeAdi"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">
+                        <i class="fa-solid fa-envelope me-1"></i> E-posta
+                    </label>
+                    <input asp-for="Email" class="form-control" placeholder="ornek@mail.com" autocomplete="off" />
+                    <span asp-validation-for="Email"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">
+                        <i class="fa-solid fa-lock me-1"></i> Þifre
+                    </label>
+                    <input asp-for="Password" class="form-control" placeholder="En az 6 karakter" autocomplete="new-password" />
+                    <span asp-validation-for="Password"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="small fw-bold text-muted">
+                        <i class="fa-solid fa-lock me-1"></i> Þifre Tekrar
+                    </label>
+                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Þifrenizi tekrar giriniz" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword"></span>
+                </div>
+
+                <button type="submit" class="btn-register">
+                    <i class="fa-solid fa-user-plus me-2"></i>KAYIT OL
+                </button>
+
+                <div class="text-center mt-4">
+                    <a asp-action="Login" class="text-decoration-none small fw-bold" style="color:#667eea;">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Giriþ Sayfasýna Dön
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="text-center mt-4">
+            <a asp-action="Login" class="back-link small">
+                <i class="fa-solid fa-arrow-left me-1"></i> Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

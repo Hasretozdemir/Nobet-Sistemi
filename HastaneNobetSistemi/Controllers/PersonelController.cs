@@ -63,12 +63,33 @@ public class PersonelController : Controller
             .OrderBy(i => i.BaslangicTarihi)
             .ToListAsync();
 
+        // Nöbet ücret hesaplama - UcretTipi'ne göre
+        decimal nobetBasinaUcret;
+        if (personel.UcretTipi == "IcapUzaktan")
+        {
+            nobetBasinaUcret = (personel.IcapSaatlikUcret * personel.IcapSaat) + (personel.UzaktanSaatlikUcret * personel.UzaktanSaat);
+        }
+        else
+        {
+            nobetBasinaUcret = personel.NobetUcreti;
+        }
+
+        var toplamNobet = (personel.ToplamHaftaIci + personel.ToplamHaftaSonu + personel.ToplamBayram);
+        var toplamKazanc = toplamNobet * nobetBasinaUcret;
+
+        // Bu ayki kazanç
+        var buAyNobet = (personel.BuAyHaftaIci + personel.BuAyHaftaSonu + personel.BuAyBayram);
+        var buAyKazanc = buAyNobet * nobetBasinaUcret;
+
         ViewBag.Personel = personel;
         ViewBag.GelecekNobetler = gelecekNobetler;
         ViewBag.GecmisNobetler = gecmisNobetler;
         ViewBag.BekleyenTakaslar = bekleyenTakaslar;
         ViewBag.BekleyenIzinTalepleri = bekleyenIzinTalepleri;
         ViewBag.OnaylananIzinler = onaylananIzinler;
+        ViewBag.ToplamKazanc = toplamKazanc;
+        ViewBag.BuAyKazanc = buAyKazanc;
+        ViewBag.NobetBasinaUcret = nobetBasinaUcret;
 
         return View();
     }
@@ -151,16 +172,32 @@ public class PersonelController : Controller
             .OrderByDescending(n => n.Tarih)
             .ToListAsync();
 
+        // Nöbet başına ücret hesapla
+        decimal nobetBasinaUcret;
+        if (personel.UcretTipi == "IcapUzaktan")
+        {
+            nobetBasinaUcret = (personel.IcapSaatlikUcret * personel.IcapSaat) + (personel.UzaktanSaatlikUcret * personel.UzaktanSaat);
+        }
+        else
+        {
+            nobetBasinaUcret = personel.NobetUcreti;
+        }
+
         // İstatistikleri hesapla
         var bugun = DateTime.Today;
+        var toplamNobet = tumNobetlerim.Count;
+        var tamamlananNobet = tumNobetlerim.Count(n => n.Tarih.Date < bugun);
         var stats = new
         {
-            ToplamNobet = tumNobetlerim.Count,
+            ToplamNobet = toplamNobet,
             ToplamHaftaIci = tumNobetlerim.Count(n => n.NobetTipi == "HaftaIci"),
             ToplamHaftaSonu = tumNobetlerim.Count(n => n.NobetTipi == "HaftaSonu"),
             ToplamBayram = tumNobetlerim.Count(n => n.NobetTipi == "Bayram"),
-            TamamlananNobet = tumNobetlerim.Count(n => n.Tarih.Date < bugun),
-            GelecekNobet = tumNobetlerim.Count(n => n.Tarih.Date >= bugun)
+            TamamlananNobet = tamamlananNobet,
+            GelecekNobet = tumNobetlerim.Count(n => n.Tarih.Date >= bugun),
+            NobetBasinaUcret = nobetBasinaUcret,
+            ToplamKazanc = toplamNobet * nobetBasinaUcret,
+            TamamlananKazanc = tamamlananNobet * nobetBasinaUcret
         };
 
         ViewBag.Personel = personel;

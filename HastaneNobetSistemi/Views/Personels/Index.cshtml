@@ -29,6 +29,7 @@
                         <th class="text-center text-muted small fw-bold text-uppercase">Toplam H.İçi</th>
                         <th class="text-center text-muted small fw-bold text-uppercase">Toplam H.Sonu</th>
                         <th class="text-center text-muted small fw-bold text-uppercase">Toplam Bayram</th>
+                        <th class="text-center text-muted small fw-bold text-uppercase">Nöbet Ücreti</th>
                         <th class="text-center text-muted small fw-bold text-uppercase">Sistem Durumu</th>
                         <th class="text-end pe-4 text-muted small fw-bold text-uppercase">İşlemler</th>
                     </tr>
@@ -37,7 +38,7 @@
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="fa-solid fa-users-slash fs-1 d-block mb-3 text-secondary opacity-50"></i>
                                 Henüz kayıtlı personel bulunmamaktadır.
                             </td>
@@ -49,6 +50,9 @@
                         bool izinliMi = item.IzinBaslangic.HasValue && item.IzinBitis.HasValue &&
                         DateTime.Now.Date >= item.IzinBaslangic.Value.Date &&
                         DateTime.Now.Date <= item.IzinBitis.Value.Date;
+
+                        var toplamNobet = item.ToplamHaftaIci + item.ToplamHaftaSonu + item.ToplamBayram;
+                        var toplamUcret = toplamNobet * item.NobetUcreti;
 
                         <tr>
                             <td class="ps-4 py-3">
@@ -67,6 +71,10 @@
                                             }
                                         </div>
                                         <div class="small text-muted">
+                                            @if (!string.IsNullOrEmpty(item.Unvan))
+                                            {
+                                                <span class="me-2"><i class="fa-solid fa-briefcase me-1"></i>@item.Unvan</span>
+                                            }
                                             Son: @(item.SonNobetTarihi?.ToString("dd.MM.yyyy") ?? "Yok")
                                         </div>
                                     </div>
@@ -80,6 +88,32 @@
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-soft-info text-dark px-3 py-2 rounded-pill fs-6 border">@item.ToplamBayram</span>
+                            </td>
+                            <td class="text-center">
+                                @{
+                                    var nobetBasinaUcret = item.UcretTipi == "IcapUzaktan"
+                                        ? (item.IcapSaatlikUcret * item.IcapSaat) + (item.UzaktanSaatlikUcret * item.UzaktanSaat)
+                                        : item.NobetUcreti;
+                                    var toplamUcretHesap = toplamNobet * nobetBasinaUcret;
+                                }
+                                @if (nobetBasinaUcret > 0)
+                                {
+                                    <div>
+                                        <span class="badge bg-soft-success text-dark px-3 py-2 rounded-pill fs-6 border">@toplamUcretHesap.ToString("N2") ₺</span>
+                                    </div>
+                                    @if (item.UcretTipi == "IcapUzaktan")
+                                    {
+                                        <small class="text-muted">@nobetBasinaUcret.ToString("N2") ₺/nöbet <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25" style="font-size:0.6rem;">İcap+Uzaktan</span></small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted">@nobetBasinaUcret.ToString("N2") ₺/nöbet</small>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Belirlenmedi</span>
+                                }
                             </td>
                             <td class="text-center">
                                 @if (izinliMi)
@@ -148,6 +182,11 @@
         .bg-soft-info {
             background-color: #e1f5fe;
             border-color: #81d4fa !important;
+        }
+
+        .bg-soft-success {
+            background-color: #e8f5e9;
+            border-color: #a5d6a7 !important;
         }
 
         .transition-hover {

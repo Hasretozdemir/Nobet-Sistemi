@@ -2,56 +2,106 @@
 
 @{
     ViewData["Title"] = "Takas Teklifini Kabul Et";
-    var takas = ViewBag.Takas as HastaneNobetSistemi.Models.NobetTakas;
 }
 
-<div class="container mt-4 mb-5">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card border-0 shadow-lg rounded-4">
-                <div class="card-header bg-warning bg-opacity-25 border-0 py-3">
-                    <h4 class="mb-0">
-                        <i class="fa-solid fa-handshake me-2"></i>Takas Teklifini Kabul Et
-                    </h4>
+        <div class="col-xl-7 col-lg-9">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+
+                <div class="card-header bg-dark py-4 px-4 position-relative border-0">
+                    <div class="d-flex align-items-center justify-content-between position-relative" style="z-index: 2;">
+                        <div>
+                            <h3 class="text-white mb-0 fw-bold">
+                                <i class="fa-solid fa-handshake me-2 text-success"></i>Takas Teklifini Kabul Et
+                            </h3>
+                            <p class="text-white-50 small mb-0 mt-1">Karşılığında vereceğiniz nöbeti seçin.</p>
+                        </div>
+                        <div class="text-white-50 d-none d-sm-block">
+                            <i class="fa-solid fa-arrows-rotate fa-3x opacity-25"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <!-- Teklif Detayları -->
-                    <div class="alert alert-info">
-                        <h5><i class="fa-solid fa-user-doctor me-2"></i>@Model.TeklifEdenPersonel.AdSoyad</h5>
-                        <p class="mb-1">
-                            <strong>Takas Edilecek Nöbet:</strong>
-                            @Model.TeklifEdilenNobet.Tarih.ToString("dd MMMM yyyy dddd")
-                            <span class="badge bg-secondary ms-2">@Model.TeklifEdilenNobet.NobetTipi</span>
-                        </p>
-                        <p class="mb-0"><strong>Açıklama:</strong> @Model.Aciklama</p>
+
+                <div class="card-body p-4 p-md-5 bg-light">
+
+                    <!-- Teklif Bilgisi -->
+                    <div class="d-flex align-items-center p-4 bg-white rounded-4 shadow-sm mb-4 border-start border-4 border-success">
+                        <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center rounded-circle me-4" style="width:55px;height:55px;">
+                            <i class="fa-solid fa-user-doctor text-primary fs-4"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted text-uppercase fw-bold">Teklif Eden</small>
+                            <h4 class="fw-bold text-dark mb-0">@Model.TeklifEdenPersonel?.AdSoyad</h4>
+                        </div>
                     </div>
 
-                    <!-- Karşılık Nöbet Seçimi -->
+                    <!-- Takas Edilmek İstenen Nöbet -->
+                    <div class="card border-0 shadow-sm rounded-4 mb-4">
+                        <div class="card-body p-4 text-center">
+                            <i class="fa-solid fa-calendar-day text-primary fs-2 mb-2"></i>
+                            <small class="d-block text-muted text-uppercase fw-bold mb-1">Takas Edilmek İstenen Nöbet</small>
+                            <h5 class="fw-bold text-dark mb-1">@Model.TeklifEdilenNobet?.Tarih.ToString("dd MMMM yyyy")</h5>
+                            <span class="text-muted">@Model.TeklifEdilenNobet?.Tarih.ToString("dddd")</span>
+                            <div class="mt-2">
+                                @if (Model.TeklifEdilenNobet?.NobetTipi == "HaftaSonu")
+                                {
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-1">Hafta Sonu</span>
+                                }
+                                else if (Model.TeklifEdilenNobet?.NobetTipi == "Bayram")
+                                {
+                                    <span class="badge bg-info rounded-pill px-3 py-1">Bayram</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary rounded-pill px-3 py-1">Hafta İçi</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Açıklama -->
+                    @if (!string.IsNullOrEmpty(Model.Aciklama))
+                    {
+                        <div class="bg-white rounded-3 p-3 mb-4 shadow-sm border-start border-3 border-primary">
+                            <small class="text-muted fw-bold">Açıklama:</small>
+                            <p class="mb-0 mt-1 fst-italic text-secondary">"@Model.Aciklama"</p>
+                        </div>
+                    }
+
+                    <!-- Bilgi -->
+                    <div class="alert alert-info border-0 rounded-3 shadow-sm mb-4">
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        <strong>Not:</strong> Takas onaylandığında resmi nöbet listesi <strong>değişmez</strong>. Sadece kendi aranızda anlaşmış olursunuz ve takas bilgisi kaydedilir.
+                    </div>
+
+                    <!-- Form -->
                     <form asp-action="AcceptConfirm" method="post">
                         <input type="hidden" name="id" value="@Model.Id" />
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-danger">
-                                <i class="fa-solid fa-exchange-alt me-2"></i>Karşılığında Vereceğiniz Nöbet
-                            </label>
-                            <select name="karsilikNobetId" class="form-select" asp-items="ViewBag.KarsilikNobetler" required>
-                                <option value="">-- Nöbet Seçiniz --</option>
+                        <div class="section-title mb-3">
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Karşılığında Vereceğiniz Nöbet</span>
+                            <hr class="text-muted opacity-25">
+                        </div>
+
+                        <div class="form-floating shadow-sm rounded-3 mb-4">
+                            <select name="karsilikNobetId" class="form-select border-0 px-4" asp-items="ViewBag.KarsilikNobetler" required>
+                                <option value="">-- Karşılık Nöbet Seçiniz --</option>
                             </select>
-                            <small class="text-muted">Aynı tip nöbetleriniz listeleniyor</small>
+                            <label class="text-muted"><i class="fa-solid fa-calendar-check me-2 text-warning"></i>Gelecek Nöbetleriniz</label>
                         </div>
 
-                        <div class="alert alert-warning">
-                            <i class="fa-solid fa-exclamation-triangle me-2"></i>
-                            <strong>Dikkat:</strong> Takası onayladığınızda nöbetler otomatik olarak değiştirilecektir.
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fa-solid fa-check-circle me-2"></i>Takası Onayla
-                            </button>
-                            <a asp-action="Index" class="btn btn-outline-secondary">
-                                <i class="fa-solid fa-arrow-left me-2"></i>Vazgeç
-                            </a>
+                        <div class="row g-3">
+                            <div class="col-md-5 order-2 order-md-1">
+                                <a asp-action="Index" class="btn btn-outline-dark w-100 py-3 rounded-pill fw-bold" style="transition: all 0.3s;">
+                                    <i class="fa-solid fa-arrow-left me-2"></i>Vazgeç
+                                </a>
+                            </div>
+                            <div class="col-md-7 order-1 order-md-2">
+                                <button type="submit" class="btn btn-success w-100 py-3 rounded-pill fw-bold shadow" style="transition: all 0.3s;">
+                                    <i class="fa-solid fa-handshake me-2"></i>Takası Onayla
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -59,3 +109,11 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <style>
+        .form-select:focus { box-shadow: none; border: 1px solid #0d6efd !important; }
+        .form-floating > .form-select { border-bottom: 2px solid transparent; }
+        .form-floating > .form-select:focus { border-bottom: 2px solid #0d6efd; }
+    </style>
+}

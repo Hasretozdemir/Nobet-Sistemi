@@ -15,11 +15,11 @@ public class NobetDagiticisi
         _context = context;
     }
 
-    public async Task OtomatikNobetDagit(DateTime hedefAy)
+    public async Task OtomatikNobetDagit(DateTime hedefAy, string yetkiliUserId)
     {
-        // Aktif personelleri getir (HERKESI dahil et)
+        // Aktif personelleri getir (sadece bu yetkili/işletmenin personelleri)
         var personeller = await _context.Personeller
-            .Where(p => (p.AktifMi ?? true) == true)
+            .Where(p => (p.AktifMi ?? true) == true && p.YetkiliUserId == yetkiliUserId)
             .ToListAsync();
 
         if (!personeller.Any())
@@ -28,9 +28,10 @@ public class NobetDagiticisi
         var ayBas = new DateTime(hedefAy.Year, hedefAy.Month, 1);
         var aySon = ayBas.AddMonths(1).AddDays(-1);
 
-        // ✅ SADECE HEDEF AYI SİL (Geçmiş aylara dokunmaz)
+        // ✅ SADECE HEDEF AYI VE BU YETKİLİNİN PERSONELLERİNİ SİL
+        var personelIds = personeller.Select(p => p.Id).ToList();
         var hedefAyNobetleri = await _context.Nobetler
-            .Where(n => n.Tarih >= ayBas && n.Tarih <= aySon)
+            .Where(n => n.Tarih >= ayBas && n.Tarih <= aySon && personelIds.Contains(n.PersonelId))
             .ToListAsync();
 
         if (hedefAyNobetleri.Any())

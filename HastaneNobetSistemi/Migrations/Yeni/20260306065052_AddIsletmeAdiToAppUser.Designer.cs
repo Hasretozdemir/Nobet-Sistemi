@@ -4,16 +4,19 @@ using HastaneNobetSistemi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace HastaneNobetSistemi.Migrations
+namespace HastaneNobetSistemi.Migrations.Yeni
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260306065052_AddIsletmeAdiToAppUser")]
+    partial class AddIsletmeAdiToAppUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -314,14 +317,6 @@ namespace HastaneNobetSistemi.Migrations
                     b.Property<int>("HaftaSonuSira")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("IcapSaat")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("IcapSaatlikUcret")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime>("IseGirisTarihi")
                         .HasColumnType("datetime2");
 
@@ -352,36 +347,17 @@ namespace HastaneNobetSistemi.Migrations
                     b.Property<int>("ToplamHaftaSonu")
                         .HasColumnType("int");
 
-                    b.Property<string>("UcretTipi")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Unvan")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<decimal>("UzaktanSaat")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("UzaktanSaatlikUcret")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<bool>("YedekMi")
                         .HasColumnType("bit");
-
-                    b.Property<string>("YetkiliUserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("ZorunluNobetciMi")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("YetkiliUserId");
 
                     b.ToTable("Personeller");
                 });
@@ -589,14 +565,6 @@ namespace HastaneNobetSistemi.Migrations
                     b.Navigation("TeklifEdenPersonel");
 
                     b.Navigation("TeklifEdilenNobet");
-                });
-
-            modelBuilder.Entity("HastaneNobetSistemi.Models.Personel", b =>
-                {
-                    b.HasOne("HastaneNobetSistemi.Models.AppUser", null)
-                        .WithMany()
-                        .HasForeignKey("YetkiliUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

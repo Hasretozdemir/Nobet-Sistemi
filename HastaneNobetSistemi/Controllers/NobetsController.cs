@@ -11,6 +11,7 @@ using HastaneNobetSistemi.Services;
 using ClosedXML.Excel;
 using System.IO;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace HastaneNobetSistemi.Controllers
 {
@@ -19,16 +20,35 @@ namespace HastaneNobetSistemi.Controllers
     {
         private readonly AppDbContext _context;
         private readonly NobetDagiticisi _nobetDagiticisi;
+        private readonly UserManager<AppUser> _userManager;
 
-        public NobetsController(AppDbContext context, NobetDagiticisi nobetDagiticisi)
+        public NobetsController(AppDbContext context, NobetDagiticisi nobetDagiticisi, UserManager<AppUser> userManager)
         {
             _context = context;
             _nobetDagiticisi = nobetDagiticisi;
+            _userManager = userManager;
+        }
+
+        private async Task<string> GetYetkiliUserId()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            return user!.Id;
+        }
+
+        private async Task<List<int>> GetYetkiliPersonelIds()
+        {
+            var yetkiliUserId = await GetYetkiliUserId();
+            return await _context.Personeller
+                .Where(p => p.YetkiliUserId == yetkiliUserId)
+                .Select(p => p.Id)
+                .ToListAsync();
         }
 
         // GET: Nobets
         public async Task<IActionResult> Index(int? ay, int? yil)
         {
+            var personelIds = await GetYetkiliPersonelIds();
+
             int seciliAy;
             int seciliYil;
 
@@ -40,6 +60,7 @@ namespace HastaneNobetSistemi.Controllers
             else
             {
                 var sonNobet = await _context.Nobetler
+                    .Where(n => personelIds.Contains(n.PersonelId))
                     .OrderByDescending(n => n.Tarih)
                     .FirstOrDefaultAsync();
 
@@ -59,13 +80,14 @@ namespace HastaneNobetSistemi.Controllers
             ViewBag.SeciliYil = seciliYil;
 
             // ✅ Yayın durumu kontrolü
+            var yetkiliUserId = await GetYetkiliUserId();
             var yayindaMi = await _context.NobetYayinlari
                 .AnyAsync(y => y.Ay == seciliAy && y.Yil == seciliYil && y.YayindaMi);
             ViewBag.YayindaMi = yayindaMi;
 
             var liste = await _context.Nobetler
                 .Include(n => n.Personel)
-                .Where(n => n.Tarih.Month == seciliAy && n.Tarih.Year == seciliYil)
+                .Where(n => n.Tarih.Month == seciliAy && n.Tarih.Year == seciliYil && personelIds.Contains(n.PersonelId))
                 .OrderBy(n => n.Tarih)
                 .ToListAsync();
 
@@ -75,8 +97,9 @@ namespace HastaneNobetSistemi.Controllers
         // ✅ ZORUNLU NÖBETÇİ LİSTESİ
         public async Task<IActionResult> ZorunluListe()
         {
+            var yetkiliUserId = await GetYetkiliUserId();
             var zorunluPersoneller = await _context.Personeller
-                .Where(p => p.ZorunluNobetciMi && (p.AktifMi ?? true))
+                .Where(p => p.ZorunluNobetciMi && (p.AktifMi ?? true) && p.YetkiliUserId == yetkiliUserId)
                 .OrderBy(p => p.AdSoyad)
                 .ToListAsync();
 
@@ -89,7 +112,8 @@ namespace HastaneNobetSistemi.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ZorunluDurumDegistir(int id, bool zorunluMu)
         {
-            var personel = await _context.Personeller.FindAsync(id);
+            var yetkiliUserId = await GetYetkiliUserId();
+            var personel = await _context.Personeller.FirstOrDefaultAsync(p => p.Id == id && p.YetkiliUserId == yetkiliUserId);
             if (personel == null)
             {
                 TempData["ErrorMessage"] = "Personel bulunamadı!";
@@ -199,27 +223,36 @@ namespace HastaneNobetSistemi.Controllers
         [HttpGet]
         public async Task<IActionResult> ExportToExcel(int ay, int yil)
         {
+            var yetkiliUser = await _userManager.GetUserAsync(User);
+            var yetkiliUserId = yetkiliUser!.Id;
+            var personelIds = await _context.Personeller
+                .Where(p => p.YetkiliUserId == yetkiliUserId)
+                .Select(p => p.Id)
+                .ToListAsync();
+
             var aylar = new[] { "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık" };
             var gunler = new[] { "Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt" };
             int gunSayisi = DateTime.DaysInMonth(yil, ay);
 
             var nobetler = await _context.Nobetler
                 .Include(n => n.Personel)
-                .Where(n => n.Tarih.Month == ay && n.Tarih.Year == yil)
+                .Where(n => n.Tarih.Month == ay && n.Tarih.Year == yil && personelIds.Contains(n.PersonelId))
                 .ToListAsync();
 
             var personeller = nobetler.Select(n => n.Personel).DistinctBy(p => p.Id).OrderBy(p => p.AdSoyad).ToList();
             var bayramlar = await _context.Bayramlar.ToListAsync();
+
+            var isletmeAdi = yetkiliUser.IsletmeAdi ?? "İŞLETME";
 
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Nöbet Çizelgesi");
 
                 // --- 1. KURUMSAL ÜST BİLGİ ---
-                worksheet.Cell(1, 1).Value = "GAZİ ÜNİVERSİTESİ SAĞLIK ARAŞTIRMA VE UYGULAMA MERKEZİ (GAZİ HASTANESİ)";
+                worksheet.Cell(1, 1).Value = isletmeAdi.ToUpper();
                 worksheet.Range(1, 1, 1, gunSayisi + 1).Merge().Style.Font.SetBold().Font.SetFontSize(14).Font.SetFontColor(XLColor.FromHtml("#1a3a5a")).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
 
-                worksheet.Cell(2, 1).Value = $"{aylar[ay - 1]} {yil} AYI BİLGİ İŞLEM BİRİMİ NÖBET ÇİZELGESİ";
+                worksheet.Cell(2, 1).Value = $"{aylar[ay - 1]} {yil} AYI NÖBET ÇİZELGESİ";
                 worksheet.Range(2, 1, 2, gunSayisi + 1).Merge().Style.Font.SetBold().Font.SetFontSize(11).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
 
                 // --- 2. MATRİS BAŞLIKLARI (Günler - 2 Satırlı: GÜN ADI ve TARİH) ---
@@ -337,8 +370,9 @@ namespace HastaneNobetSistemi.Controllers
         {
             try
             {
+                var yetkiliUserId = await GetYetkiliUserId();
                 var hedefTarih = new DateTime(dagitYil, dagitAy, 1);
-                await _nobetDagiticisi.OtomatikNobetDagit(hedefTarih);
+                await _nobetDagiticisi.OtomatikNobetDagit(hedefTarih, yetkiliUserId);
                 TempData["SuccessMessage"] = $"{dagitAy}/{dagitYil} dönemi nöbetleri başarıyla hazırlandı. Önceki aylar korundu!";
             }
             catch (Exception ex)
@@ -353,13 +387,23 @@ namespace HastaneNobetSistemi.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SistemiTamamenSifirla()
         {
-            var tumNobetler = await _context.Nobetler.ToListAsync();
+            var yetkiliUserId = await GetYetkiliUserId();
+            var personelIds = await _context.Personeller
+                .Where(p => p.YetkiliUserId == yetkiliUserId)
+                .Select(p => p.Id)
+                .ToListAsync();
+
+            var tumNobetler = await _context.Nobetler
+                .Where(n => personelIds.Contains(n.PersonelId))
+                .ToListAsync();
             if (tumNobetler.Any())
             {
                 _context.Nobetler.RemoveRange(tumNobetler);
             }
 
-            var personeller = await _context.Personeller.ToListAsync();
+            var personeller = await _context.Personeller
+                .Where(p => p.YetkiliUserId == yetkiliUserId)
+                .ToListAsync();
             foreach (var p in personeller)
             {
                 p.ToplamHaftaIci = 0;
@@ -379,14 +423,16 @@ namespace HastaneNobetSistemi.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
-            var nobet = await _context.Nobetler.Include(n => n.Personel).FirstOrDefaultAsync(m => m.Id == id);
+            var personelIds = await GetYetkiliPersonelIds();
+            var nobet = await _context.Nobetler.Include(n => n.Personel).FirstOrDefaultAsync(m => m.Id == id && personelIds.Contains(m.PersonelId));
             if (nobet == null) return NotFound();
             return View(nobet);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["PersonelId"] = new SelectList(_context.Personeller.Where(p => p.AktifMi == true), "Id", "AdSoyad");
+            var yetkiliUserId = await GetYetkiliUserId();
+            ViewData["PersonelId"] = new SelectList(_context.Personeller.Where(p => p.AktifMi == true && p.YetkiliUserId == yetkiliUserId), "Id", "AdSoyad");
             return View();
         }
 
@@ -400,7 +446,8 @@ namespace HastaneNobetSistemi.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index), new { ay = nobet.Tarih.Month, yil = nobet.Tarih.Year });
             }
-            ViewData["PersonelId"] = new SelectList(_context.Personeller, "Id", "AdSoyad", nobet.PersonelId);
+            var yetkiliUserId = await GetYetkiliUserId();
+            ViewData["PersonelId"] = new SelectList(_context.Personeller.Where(p => p.YetkiliUserId == yetkiliUserId), "Id", "AdSoyad", nobet.PersonelId);
             return View(nobet);
         }
 
@@ -409,7 +456,8 @@ namespace HastaneNobetSistemi.Controllers
             if (id == null) return NotFound();
             var nobet = await _context.Nobetler.FindAsync(id);
             if (nobet == null) return NotFound();
-            ViewData["PersonelId"] = new SelectList(_context.Personeller.Where(p => p.AktifMi == true), "Id", "AdSoyad", nobet.PersonelId);
+            var yetkiliUserId = await GetYetkiliUserId();
+            ViewData["PersonelId"] = new SelectList(_context.Personeller.Where(p => p.AktifMi == true && p.YetkiliUserId == yetkiliUserId), "Id", "AdSoyad", nobet.PersonelId);
             return View(nobet);
         }
 
@@ -424,14 +472,16 @@ namespace HastaneNobetSistemi.Controllers
                 catch (DbUpdateConcurrencyException) { if (!NobetExists(nobet.Id)) return NotFound(); else throw; }
                 return RedirectToAction(nameof(Index), new { ay = nobet.Tarih.Month, yil = nobet.Tarih.Year });
             }
-            ViewData["PersonelId"] = new SelectList(_context.Personeller, "Id", "AdSoyad", nobet.PersonelId);
+            var yetkiliUserId = await GetYetkiliUserId();
+            ViewData["PersonelId"] = new SelectList(_context.Personeller.Where(p => p.YetkiliUserId == yetkiliUserId), "Id", "AdSoyad", nobet.PersonelId);
             return View(nobet);
         }
 
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
-            var nobet = await _context.Nobetler.Include(n => n.Personel).FirstOrDefaultAsync(m => m.Id == id);
+            var personelIds = await GetYetkiliPersonelIds();
+            var nobet = await _context.Nobetler.Include(n => n.Personel).FirstOrDefaultAsync(m => m.Id == id && personelIds.Contains(m.PersonelId));
             if (nobet == null) return NotFound();
             return View(nobet);
         }

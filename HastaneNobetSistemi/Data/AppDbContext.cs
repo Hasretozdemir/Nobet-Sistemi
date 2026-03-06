@@ -21,6 +21,34 @@ public class AppDbContext : IdentityDbContext<AppUser>
     {
         base.OnModelCreating(modelBuilder);
 
+        // NobetUcreti decimal hassasiyeti
+        modelBuilder.Entity<Personel>()
+            .Property(p => p.NobetUcreti)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Personel>()
+            .Property(p => p.IcapSaatlikUcret)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Personel>()
+            .Property(p => p.IcapSaat)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Personel>()
+            .Property(p => p.UzaktanSaatlikUcret)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Personel>()
+            .Property(p => p.UzaktanSaat)
+            .HasPrecision(18, 2);
+
+        // Personel - Yetkili ilişkisi
+        modelBuilder.Entity<Personel>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(p => p.YetkiliUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // AppUser - Personel ilişkisi
         modelBuilder.Entity<AppUser>()
             .HasOne(u => u.Personel)
@@ -39,7 +67,13 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .HasOne(t => t.HedefPersonel)
             .WithMany()
             .HasForeignKey(t => t.HedefPersonelId)
-            .OnDelete(DeleteBehavior.NoAction); // ✅ SetNull yerine NoAction
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<NobetTakas>()
+            .HasOne(t => t.KabulEdenPersonel)
+            .WithMany()
+            .HasForeignKey(t => t.KabulEdenPersonelId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         // ✅ NobetTakas - Nobet ilişkileri (TÜM NO ACTION)
         modelBuilder.Entity<NobetTakas>()

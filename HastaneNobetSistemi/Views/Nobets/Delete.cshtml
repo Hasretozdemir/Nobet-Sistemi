@@ -4,74 +4,100 @@
     ViewData["Title"] = "Nöbet Kaydını Sil";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-lg border-0 rounded-4 border-top border-danger border-5">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-7 col-lg-9">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
 
-            <div class="card-body p-4 p-md-5 text-center">
-
-                <div class="text-danger mb-4">
-                    <i class="fa-solid fa-triangle-exclamation fa-4x mb-3 animation-pulse"></i>
-                    <h3 class="fw-bold">Nöbet Kaydını Silmek Üzeresiniz!</h3>
-                    <p class="text-muted">Bu nöbet kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve personelin <strong>toplam adalet puanını</strong> doğrudan etkileyebilir.</p>
-                </div>
-
-                <div class="bg-light rounded-3 p-4 text-start mb-4 shadow-sm border">
-                    <h5 class="fw-bold border-bottom pb-2 mb-3 text-secondary">
-                        <i class="fa-solid fa-file-circle-xmark me-2"></i>Silinecek Nöbet Detayları
-                    </h5>
-
-                    <div class="row mb-3 align-items-center">
-                        <div class="col-sm-5 fw-semibold text-muted">
-                            <i class="fa-solid fa-user-doctor me-2"></i>Personel
+                <div class="card-header bg-dark py-4 px-4 position-relative border-0">
+                    <div class="d-flex align-items-center justify-content-between position-relative" style="z-index: 2;">
+                        <div>
+                            <h3 class="text-white mb-0 fw-bold">
+                                <i class="fa-solid fa-trash-can me-2 text-danger"></i>Nöbet Kaydını Sil
+                            </h3>
+                            <p class="text-white-50 small mb-0 mt-1">Bu işlem geri alınamaz, lütfen dikkatli olun.</p>
                         </div>
-                        <div class="col-sm-7 fw-bold text-primary fs-5">
-                            @Html.DisplayFor(model => model.Personel.AdSoyad)
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <div class="col-sm-5 fw-semibold text-muted">
-                            <i class="fa-solid fa-calendar-day me-2"></i>@Html.DisplayNameFor(model => model.Tarih)
-                        </div>
-                        <div class="col-sm-7 fw-bold text-dark">
-                            @Html.DisplayFor(model => model.Tarih)
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <div class="col-sm-5 fw-semibold text-muted">
-                            <i class="fa-solid fa-star me-2"></i>@Html.DisplayNameFor(model => model.PuanDegeri)
-                        </div>
-                        <div class="col-sm-7">
-                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fs-6 shadow-sm">
-                                @Html.DisplayFor(model => model.PuanDegeri) Puan
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="row mb-2 align-items-center">
-                        <div class="col-sm-5 fw-semibold text-muted">
-                            <i class="fa-solid fa-layer-group me-2"></i>Nöbet Tipi
-                        </div>
-                        <div class="col-sm-7 fw-bold text-dark">
-                            @Html.DisplayFor(model => model.NobetTipi)
+                        <div class="text-white-50 d-none d-sm-block">
+                            <i class="fa-solid fa-triangle-exclamation fa-3x opacity-25"></i>
                         </div>
                     </div>
                 </div>
 
-                <form asp-action="Delete" class="d-flex justify-content-between mt-4">
-                    <input type="hidden" asp-for="Id" />
+                <div class="card-body p-4 p-md-5 bg-light">
 
-                    <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 fw-semibold rounded-pill transition-hover">
-                        <i class="fa-solid fa-arrow-left me-2"></i>Vazgeç
-                    </a>
+                    <div class="alert alert-danger d-flex align-items-start mb-4 shadow-sm border-0 rounded-3">
+                        <i class="fa-solid fa-circle-exclamation me-3 fs-4 mt-1 pulse-icon"></i>
+                        <div>
+                            <strong>Dikkat!</strong><br />
+                            <span class="text-muted">Bu nöbet kaydını silmek üzeresiniz. Silme işlemi personelin toplam nöbet sayaçlarını etkileyebilir.</span>
+                        </div>
+                    </div>
 
-                    <button type="submit" class="btn btn-danger px-4 py-2 fw-bold rounded-pill shadow-sm transition-hover">
-                        <i class="fa-solid fa-trash-can me-2"></i>Evet, Nöbeti Sil
-                    </button>
-                </form>
+                    <!-- Silinecek Nöbet Bilgileri -->
+                    <div class="d-flex align-items-center p-4 bg-white rounded-4 shadow-sm mb-4 border-start border-4 border-danger">
+                        <div class="bg-danger bg-opacity-10 text-danger fw-bold d-flex align-items-center justify-content-center rounded-circle me-4" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                            @(Model.Personel?.AdSoyad?.Substring(0, 1).ToUpper() ?? "?")
+                        </div>
+                        <div>
+                            <small class="text-danger text-uppercase fw-bold">Silinecek Nöbet</small>
+                            <h4 class="fw-bold text-dark mb-0">@Model.Personel?.AdSoyad</h4>
+                        </div>
+                    </div>
 
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-body p-4 text-center">
+                                    <i class="fa-solid fa-calendar-day text-danger fs-3 mb-2"></i>
+                                    <small class="d-block text-muted text-uppercase fw-bold mb-1">Nöbet Tarihi</small>
+                                    <h5 class="fw-bold text-dark mb-1">@Model.Tarih.ToString("dd MMMM yyyy")</h5>
+                                    <span class="text-muted">@Model.Tarih.ToString("dddd")</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-body p-4 text-center">
+                                    @if (Model.NobetTipi == "HaftaIci")
+                                    {
+                                        <i class="fa-solid fa-building text-secondary fs-3 mb-2"></i>
+                                        <small class="d-block text-muted text-uppercase fw-bold mb-1">Nöbet Tipi</small>
+                                        <span class="badge bg-secondary rounded-pill px-4 py-2 fs-6">Hafta İçi</span>
+                                    }
+                                    else if (Model.NobetTipi == "HaftaSonu")
+                                    {
+                                        <i class="fa-solid fa-mug-hot text-warning fs-3 mb-2"></i>
+                                        <small class="d-block text-muted text-uppercase fw-bold mb-1">Nöbet Tipi</small>
+                                        <span class="badge bg-warning text-dark rounded-pill px-4 py-2 fs-6">Hafta Sonu</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa-solid fa-star text-info fs-3 mb-2"></i>
+                                        <small class="d-block text-muted text-uppercase fw-bold mb-1">Nöbet Tipi</small>
+                                        <span class="badge bg-info rounded-pill px-4 py-2 fs-6">Bayram</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6 order-2 order-md-1">
+                                <a asp-action="Index" class="btn btn-outline-dark w-100 py-3 rounded-pill fw-bold transition-all">
+                                    <i class="fa-solid fa-arrow-left me-2"></i>Vazgeç, Listeye Dön
+                                </a>
+                            </div>
+                            <div class="col-md-6 order-1 order-md-2">
+                                <button type="submit" class="btn btn-danger w-100 py-3 rounded-pill fw-bold shadow transition-all">
+                                    <i class="fa-solid fa-trash-can me-2"></i>Evet, Nöbeti Sil
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -79,32 +105,20 @@
 
 @section Scripts {
     <style>
-        /* Uyarı ikonunun kalp atışı gibi yanıp sönmesi için */
-        .animation-pulse {
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+            .transition-all:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+            }
+        .pulse-icon {
             animation: pulse 2s infinite;
         }
-
         @@keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
-
-        /* Butonların üzerine gelince hafifçe yukarı kalkması */
-        .transition-hover {
-            transition: all 0.2s ease-in-out;
-        }
-
-            .transition-hover:hover {
-                transform: translateY(-2px);
-            }
     </style>
 }

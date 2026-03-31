@@ -1,116 +1,63 @@
-# 🏥 Hastane Nöbet Sistemi
+# 🏥 Hastane Nöbet Sistemi (ASP.NET Core MVC)
 
-Gazi Üniversitesi Sağlık Araştırma ve Uygulama Merkezi (Gazi Hastanesi) Bilgi İşlem Birimi için geliştirilmiş **otomatik nöbet dağıtım ve yönetim sistemi**. ASP.NET Core MVC (.NET 7) altyapısı ile çalışır.
+**Modern, Adaletli ve Kullanıcı Dostu Hastane Nöbet Dağıtım ve Takas Sistemi**
 
-> 🚧 **Proje henüz geliştirme aşamasındadır.** Yeni özellikler eklenmeye devam etmektedir.
-
----
-
-## 📋 İçindekiler
-
-- [Özellikler](#-özellikler)
-- [Teknolojiler](#-teknolojiler)
-- [Kurulum](#-kurulum)
-- [Varsayılan Giriş Bilgileri](#-varsayılan-giriş-bilgileri)
-- [Proje Yapısı](#-proje-yapısı)
-- [Ekran Görüntüleri](#-ekran-görüntüleri)
-- [Yapılacaklar](#-yapılacaklar)
+Hastanelerde görev yapan sağlık personellerinin (doktor, hemşire vb.) nöbet listelerinin adil bir şekilde dağıtılmasını, personeller arası nöbet takaslarını ve izin süreçlerini dijitalleştiren, web tabanlı kurumsal bir otomasyon sistemidir.
 
 ---
 
-## ✨ Özellikler
+## 🎯 Proje Nedir?
 
-### 🔐 Kimlik Doğrulama & Yetkilendirme
-- **ASP.NET Core Identity** tabanlı kullanıcı yönetimi
-- **Rol bazlı erişim kontrolü:** `Yetkili` ve `Personel` rolleri
-- Otomatik cookie tabanlı oturum yönetimi (8 saat zaman aşımı)
-- Varsayılan admin hesabı ile Seed Data desteği
+Bu sistem, hastanelerin ilgili birimlerindeki karmaşık nöbet yazım süreçlerini optimize eden bir çözümdür. Yetkililer tüm personelin nöbetlerini, bayram günlerini ve icap/uzaktan çalışma durumlarını yönetirken; personeller kendi nöbetlerini takip edebilir, takas talebinde bulunabilir ve izinlerini planlayabilir.
 
-### ⚙️ Otomatik Nöbet Dağıtımı
-- Ay bazlı otomatik nöbet dağıtım algoritması
-- **Adaletli dağıtım:** En az nöbet tutan personele öncelik
-- **7 günlük dinlenme kuralı:** Art arda nöbet yazılmasını engeller
-- **Haftalık max 2 nöbet:** 1 hafta içi + 1 hafta sonu limiti
-- **Pazartesi döngüsü:** 2 hafta atlayarak Pazartesi nöbeti ataması
-- Hafta içi / Hafta sonu / Bayram nöbet tiplerini otomatik algılama
-- İzinli personeli nöbetten muaf tutma
-- Yedek personel sistemi (son çare olarak devreye girer)
-
-### 👥 Personel Yönetimi (Yetkili Paneli)
-- Personel CRUD işlemleri (Ekleme, Düzenleme, Silme)
-- Personel ekleme sırasında otomatik kullanıcı hesabı oluşturma
-- Toplu hesap oluşturma (eski personeller için)
-- Zorunlu nöbetçi listesi yönetimi
-- Aktif/Pasif personel takibi
-- Nöbet sayaçları (Aylık & Toplam: Hafta İçi, Hafta Sonu, Bayram)
-
-### 📅 Nöbet Çizelgesi & Excel Export
-- Aylık nöbet çizelgesi görüntüleme
-- **Profesyonel Excel çıktısı** (ClosedXML ile):
-  - Kurumsal üst bilgi
-  - Matris formatında nöbet gösterimi (Gün adı + Tarih)
-  - Hafta sonu ve bayram günleri renk kodlaması
-  - Nöbet tiplerine göre renkli hücreler
-  - Kurumsal alt bilgi ve imza alanları
-
-### 🔄 Nöbet Takas Sistemi
-- Personeller arası nöbet takas teklifi oluşturma
-- Hedefli veya herkese açık takas teklifleri
-- Karşılık nöbet seçerek takas onaylama
-- Takas reddetme ve iptal etme
-- Otomatik nöbet değişimi (onay sonrası)
-
-### 🏖️ İzin Yönetimi
-- **Personel tarafı:** İzin talebi oluşturma, bekleyen talepleri görme, talep silme
-- **Yetkili tarafı:** İzin taleplerini onaylama/reddetme, izin takvimi görüntüleme
-- Çakışma kontrolü (aynı tarihlerde çift izin engelleme)
-- **Otomatik zorunlu personel ataması:** İzin onaylandığında, izinli personelin nöbetleri zorunlu personellere adil şekilde dağıtılır
-- İzin yönetim paneli ile istatistikler (Bekleyen / Onaylanan / Reddedilen)
-
-### 🎉 Bayram Yönetimi
-- Resmi tatil ve bayram günlerini tanımlama (başlangıç - bitiş)
-- Nöbet dağıtımında bayram günlerini otomatik algılama
-- Excel çıktısında bayram günlerini vurgulama
-
-### 📢 Nöbet Yayınlama
-- Hazırlanan nöbet çizelgesini personele yayınlama
-- Yayını geri çekme
-- Personel panelinde sadece yayınlanmış nöbetleri gösterme
-
-### 🏠 Personel Paneli (Dashboard)
-- Kişisel nöbet takvimi
-- Gelecek ve geçmiş nöbet listesi
-- Nöbet geçmişi ve istatistikler
-- Bekleyen takas/izin bildirim sayıları
-- Yayınlanmış dönemlere göre nöbet görüntüleme
+### 🔍 Temel İşleyiş:
+1. **Yetkili** → Sisteme personel ekler, bayram/tatil günlerini belirler ve adaletli nöbet dağıtımını gerçekleştirir.
+2. **Sistem** → Nöbetleri personelin geçmiş nöbet yüküne, izin durumuna ve yedeklik durumuna göre hesaplayarak atar.
+3. **Personel** → Kendi paneline girerek nöbet listesini görüntüler.
+4. **Personel** → Gerekli durumlarda başka bir personel ile nöbet takas talebi oluşturur.
+5. **Yetkili** → Takas ve izin taleplerini onaylar veya reddeder.
 
 ---
 
-## 💻 Teknolojiler
+## ✨ Temel Özellikler
 
-| Teknoloji | Versiyon | Kullanım Alanı |
-|---|---|---|
-| **.NET** | 7.0 | Uygulama altyapısı |
-| **ASP.NET Core MVC** | 7.0 | Web framework |
-| **Entity Framework Core** | 7.0.20 | ORM & Veritabanı yönetimi |
-| **ASP.NET Core Identity** | 7.0.20 | Kimlik doğrulama & yetkilendirme |
-| **SQL Server** | - | Veritabanı |
-| **ClosedXML** | 0.105.0 | Excel dosya oluşturma |
-| **Bootstrap** | - | Arayüz tasarımı |
-| **Razor Views** | - | Sunucu taraflı HTML oluşturma |
+### 👥 Personel Özellikleri
+- ✅ **Kişisel Dashboard**: Kendi nöbet takvimini ve yaklaşan nöbetleri görüntüleme.
+- ✅ **Nöbet Takas Sistemi**: Diğer personellerle nöbet değişimi talep etme ve gelen talepleri yanıtlama.
+- ✅ **İzin Yönetimi**: Yıllık veya mazeret izni talebi oluşturma ve durumunu takip etme.
+- ✅ **Nöbet Geçmişi**: Önceki aylara ait nöbetlerin ve icap/uzaktan çalışma durumlarının dökümü.
+
+### 🎛️ Yetkili (Admin) Paneli Özellikleri
+- ✅ **Gelişmiş Dağıtım Algoritması**: Adalet sistemine dayalı, personelin çalışma yükünü dengeleyen otomatik nöbet dağıtıcı (`NobetDagiticisi.cs`).
+- ✅ **Birim ve Sicil Yönetimi**: Hastane içi birimleri ve personelleri sisteme tanımlama.
+- ✅ **Takas ve İzin Onayı**: Personeller arası nöbet takaslarını ve izin taleplerini inceleyip karara bağlama.
+- ✅ **Ücret ve İcap Takibi**: Nöbet ücretleri, icap (nöbete çağrılma) ve uzaktan çalışma durumlarının hesaplanması.
+- ✅ **Bayram ve Özel Gün Yönetimi**: Tatil günlerinin sisteme girilerek nöbet zorluk derecelerinin ayarlanması.
+
+### 🎨 Tasarım Özellikleri
+- ✅ **Responsive Tasarım**: Mobil, tablet, masaüstü tam uyumlu modern arayüz.
+- ✅ **Bootstrap Grid Sistemi**: Temiz ve düzenli sayfa yerleşimleri.
+- ✅ **Dinamik Tablolar**: Verilerin anlık ve düzenli bir şekilde listelenmesi.
+
+### 🔒 Güvenlik Özellikleri
+- ✅ **ASP.NET Core Identity**: Güvenli rol (Yetkili/Personel) ve kullanıcı yönetimi.
+- ✅ **Şifreleme**: Parolaların veritabanında güvenli bir şekilde hashlenerek saklanması.
+- ✅ **Yetkilendirme (Authorization)**: Sayfalara ve işlemlere sadece yetkili rollerin erişebilmesi.
+- ✅ **Entity Framework Core**: SQL Injection saldırılarına karşı güvenli ORM kullanımı ve ilişkisel veri bütünlüğü.
+
+---
+
+## 📋 Sistem Gereksinimleri
+
+- **.NET SDK**: .NET 8.0 (veya güncel sürüm)
+- **Veritabanı**: SQL Server (LocalDB veya SQL Server Express/Developer)
+- **IDE**: Visual Studio 2022 veya JetBrains Rider
 
 ---
 
 ## 🚀 Kurulum
 
-### Gereksinimler
-- [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
-- [SQL Server](https://www.microsoft.com/sql-server) (LocalDB veya Express)
-- Visual Studio 2022+ veya VS Code
-
-### Adımlar
-
-1. **Projeyi klonlayın:**
-   ```bash
-   git clone [https://github.com/Hasretozdemir/Nobet-Sistemi.git](https://github.com/Hasretozdemir/Nobet-Sistemi.git)
-   cd Nobet-Sistemi
+### Adım 1: Depoyu Klonlayın
+```bash
+git clone <repository-url>
+cd Nobet-Sistemi-a66d30.../HastaneNobetSistemi

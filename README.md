@@ -53,11 +53,65 @@ Bu sistem, hastanelerin ilgili birimlerindeki karmaşık nöbet yazım süreçle
 - **Veritabanı**: SQL Server (LocalDB veya SQL Server Express/Developer)
 - **IDE**: Visual Studio 2022 veya JetBrains Rider
 
----
-
-## 🚀 Kurulum
-
-### Adım 1: Depoyu Klonlayın
-```bash
+🚀 Kurulum
+Adım 1: Depoyu Klonlayın
+Bash
 git clone <repository-url>
 cd Nobet-Sistemi-a66d30.../HastaneNobetSistemi
+Adım 2: Veritabanı Bağlantısını Ayarlayın
+appsettings.json dosyasını açın ve bağlantı dizenizi kendi SQL Server'ınıza göre güncelleyin:
+
+JSON
+"ConnectionStrings": {
+  "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=HastaneNobetDb;Trusted_Connection=True;MultipleActiveResultSets=true"
+}
+Adım 3: Migration'ları Çalıştırın
+Package Manager Console (PMC) veya .NET CLI üzerinden veritabanını oluşturun:
+
+Bash
+dotnet ef database update
+Adım 4: Projeyi Başlatın
+Bash
+dotnet run
+Tarayıcınızda https://localhost:xxxx (port numarası değişebilir) adresine giderek sistemi kullanmaya başlayabilirsiniz. Sistem ilk açılışta SeedData.cs üzerinden varsayılan yetkili ve rolleri oluşturacaktır.
+
+📱 Ekran Görüntüleri
+Görsellerin tam boyutlu halini görmek için üzerlerine tıklayabilirsiniz.
+
+🔐 Giriş Ekranı
+Sisteme yetkili veya personel olarak güvenli giriş yapabileceğiniz portal.
+
+👤 Personel Paneli
+Personelin kendi nöbetlerini, takas tekliflerini ve izin durumlarını takip edebildiği özel dashboard.
+
+🎛️ Yetkili Paneli
+Nöbet atamalarının yapıldığı, personel ve izin listelerinin yönetildiği ana kontrol merkezi.
+
+🗄️ Veritabanı Yapısı (Code-First)
+Sistem Entity Framework Core kullanarak aşağıdaki ana yapıları yönetir:
+
+AppUser: Identity tabanlı temel kullanıcı modeli.
+
+Personel: Kullanıcılara bağlı detaylı personel bilgileri ve sicil/birim kayıtları.
+
+Nobet: Nöbet atamaları, icap, uzaktan çalışma, ücret ve yedeklik durumları.
+
+NobetTakas: İki personel arasındaki nöbet değişim talepleri ve onay süreçleri.
+
+IzinTalebi: Personelin izin başlangıç/bitiş tarihleri ve onay durumları.
+
+Bayram: Nöbet planlamasına etki eden resmi tatil ve bayram günleri.
+
+🛠️ Teknik Mimari
+Backend: C#, ASP.NET Core MVC
+
+Veritabanı Yönetimi: Entity Framework Core, SQL Server
+
+Kimlik Doğrulama: ASP.NET Core Identity
+
+Frontend: HTML5, CSS3, JavaScript, Bootstrap
+
+📄 Lisans
+Bu proje eğitim ve kurumsal staj geliştirme amaçlı oluşturulmuştur.
+
+Geliştirici: Hasret Özdemir
